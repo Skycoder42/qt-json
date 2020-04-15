@@ -7,6 +7,8 @@
 #include <QtCore/QAssociativeIterable>
 #include <QtCore/QJsonObject>
 #include <QtCore/QJsonArray>
+#include <QtCore/QCborMap>
+#include <QtCore/QCborArray>
 #include <optional>
 using namespace QtJson;
 
@@ -18,39 +20,76 @@ const QSet<int> MetaExceptions {
     QMetaType::QLocale,
 };
 
-QJsonObject mapGadget(const QMetaObject *mo, const void *gadget, Configuration configuration) {
-    QJsonObject jObj;
+template <typename TType>
+struct Serializer;
+
+template <typename TType>
+typename Serializer<TType>::Value serialize(const QVariant &value, const Configuration &configuration);
+
+template <>
+struct Serializer<QJsonValue> {
+    using Value = QJsonValue;
+    using Map = QJsonObject;
+    using List = QJsonArray;
+
+    static constexpr auto Undefined = QJsonValue::Undefined;
+    static constexpr auto Null = QJsonValue::Null;
+
+    static inline QString key(const QVariant &value, const Configuration &) {
+        return value.toString();
+    }
+};
+
+template <>
+struct Serializer<QCborValue> {
+    using Value = QCborValue;
+    using Map = QCborMap;
+    using List = QCborArray;
+
+    static constexpr auto Undefined = QCborValue::Undefined;
+    static constexpr auto Null = QCborValue::Null;
+
+    static inline QCborValue key(const QVariant &value, const Configuration &configuration) {
+        return serialize<QCborValue>(value, configuration);
+    }
+};
+
+template <typename TType>
+typename Serializer<TType>::Map mapGadget(const QMetaObject *mo, const void *gadget, const Configuration &configuration)
+{
+    typename Serializer<TType>::Map map;
     for (auto i = 0; i < mo->propertyCount(); ++i) {
         const auto property = mo->property(i);
         if (!property.isStored())
             continue;
-        jObj.insert(QString::fromUtf8(property.name()),
-                    QtJson::stringify(property.readOnGadget(gadget), configuration));
+        map.insert(QString::fromUtf8(property.name()),
+                   serialize<TType>(property.readOnGadget(gadget), configuration));
     }
-    return jObj;
+    return map;
 }
 
-QJsonObject mapObject(QObject *object, Configuration configuration) {
-    QJsonObject jObj;
+template <typename TType>
+typename Serializer<TType>::Map mapObject(QObject *object, const Configuration &configuration)
+{
+    typename Serializer<TType>::Map map;
     const auto mo = object->metaObject();
     for (auto i = configuration.keepObjectName ? 0 : 1; i < mo->propertyCount(); ++i) {
         const auto property = mo->property(i);
         if (!property.isStored())
             continue;
-        jObj.insert(QString::fromUtf8(property.name()),
-                    QtJson::stringify(property.read(object), configuration));
+        map.insert(QString::fromUtf8(property.name()),
+                   serialize<TType>(property.read(object), configuration));
     }
-    return jObj;
+    return map;
 }
 
-}
-
-QJsonValue QtJson::stringify(const QVariant &value, Configuration configuration)
+template <typename TType>
+typename Serializer<TType>::Value serialize(const QVariant &value, const Configuration &configuration)
 {
     if (!value.isValid())
-        return QJsonValue::Undefined;
+        return Serializer<TType>::Undefined;
     if (value.isNull())
-        return QJsonValue::Null;
+        return Serializer<TType>::Null;
 
     // check for objects/gadgets
     const auto type = value.userType();
@@ -61,35 +100,35 @@ QJsonValue QtJson::stringify(const QVariant &value, Configuration configuration)
             Q_ASSERT_X(value.constData(), Q_FUNC_INFO, "value.constData() should not be null");
             const auto gadgetPtr = *reinterpret_cast<const void* const *>(value.constData());
             if (gadgetPtr)
-                return mapGadget(mo, gadgetPtr, configuration);
+                return mapGadget<TType>(mo, gadgetPtr, configuration);
             else
-                return QJsonValue::Null;
+                return Serializer<TType>::Null;
         } else if (flags.testFlag(QMetaType::IsGadget)) {
-            return mapGadget(mo, value.constData(), configuration);
+            return mapGadget<TType>(mo, value.constData(), configuration);
         } else if (flags.testFlag(QMetaType::SharedPointerToQObject)) {
             const auto objPtr = value.value<QSharedPointer<QObject>>();
             if (objPtr)
-                return mapObject(objPtr.get(), configuration);
+                return mapObject<TType>(objPtr.get(), configuration);
             else
-                return QJsonValue::Null;
+                return Serializer<TType>::Null;
         } else if (flags.testFlag(QMetaType::WeakPointerToQObject)) {
             const auto weakPtr = value.value<QWeakPointer<QObject>>();
             if (const auto objPtr = weakPtr.toStrongRef(); objPtr)
-                return mapObject(objPtr.get(), configuration);
+                return mapObject<TType>(objPtr.get(), configuration);
             else
-                return QJsonValue::Null;
+                return Serializer<TType>::Null;
         } else if (flags.testFlag(QMetaType::TrackingPointerToQObject)) {
             const auto objPtr = value.value<QPointer<QObject>>();
             if (objPtr)
-                return mapObject(objPtr, configuration);
+                return mapObject<TType>(objPtr, configuration);
             else
-                return QJsonValue::Null;
+                return Serializer<TType>::Null;
         } else if (flags.testFlag(QMetaType::PointerToQObject)) {
             const auto objPtr = value.value<QObject*>();
             if (objPtr)
-                return mapObject(objPtr, configuration);
+                return mapObject<TType>(objPtr, configuration);
             else
-                return QJsonValue::Null;
+                return Serializer<TType>::Null;
         } else if (flags.testFlag(QMetaType::IsEnumeration)) {
             if (configuration.enumAsString) {
                 const auto enumName = QString::fromUtf8(QMetaType::typeName(type))
@@ -111,22 +150,35 @@ QJsonValue QtJson::stringify(const QVariant &value, Configuration configuration)
 
     // check for lists
     if (value.canConvert(QMetaType::QVariantList)) {
-        QJsonArray jList;
+        typename Serializer<TType>::List list;
         for (const auto element : value.value<QSequentialIterable>())
-            jList.append(stringify(element, configuration));
-        return jList;
+            list.append(serialize<TType>(element, configuration));
+        return list;
     }
 
     // check for maps
     if (value.canConvert(QMetaType::QVariantMap) ||
         value.canConvert(QMetaType::QVariantHash)) {
+        typename Serializer<TType>::Map map;
         const auto iterator = value.value<QAssociativeIterable>();
-        QJsonObject jMap;
         for (auto it = iterator.begin(), end = iterator.end(); it != end; ++it)
-            jMap.insert(it.key().toString(), stringify(it.value(), configuration));
-        return jMap;
+            map.insert(Serializer<TType>::key(it.key(), configuration),
+                       serialize<TType>(it.value(), configuration));
+        return map;
     }
 
     // all other cases: default convert
-    return QJsonValue::fromVariant(value);
+    return Serializer<TType>::Value::fromVariant(value);
+}
+
+}
+
+QJsonValue QtJson::stringify(const QVariant &value, const Configuration &configuration)
+{
+    return serialize<QJsonValue>(value, configuration);
+}
+
+QCborValue QtJson::binarify(const QVariant &value, const Configuration &configuration)
+{
+    return serialize<QCborValue>(value, configuration);
 }

@@ -1,16 +1,7 @@
-TEMPLATE = lib
+TEMPLATE = subdirs
 
-QT = core
-CONFIG += c++17
+SUBDIRS += \
+    demo \
+    src
 
-TARGET = qtjson
-
-DEFINES += QT_DEPRECATED_WARNINGS
-DEFINES += QTJSON_LIBRARY
-
-HEADERS += \
-    qtjson.h \
-    qtjson_global.h
-
-SOURCES += \
-    qtjson.cpp
+demo.depends += src
