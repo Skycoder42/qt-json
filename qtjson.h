@@ -3,18 +3,19 @@
 
 #include "qtjson_global.h"
 
-#include <QtCore/QJsonObject>
+#include <QtCore/QJsonValue>
 #include <QtCore/QVariant>
 
 namespace QtJson
 {
 
-struct QTJSON_EXPORT Configuration {
+struct Configuration {
     bool keepObjectName = true;
     bool enumAsString = true;
 };
 
 QTJSON_EXPORT QJsonValue stringify(const QVariant &value, Configuration configuration = {});
+// TODO CBOR?
 };
 
 #endif // QTJSON_H

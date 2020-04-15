@@ -3,6 +3,10 @@
 #include <QtCore/QMetaProperty>
 #include <QtCore/QSharedPointer>
 #include <QtCore/QPointer>
+#include <QtCore/QSequentialIterable>
+#include <QtCore/QAssociativeIterable>
+#include <QtCore/QJsonObject>
+#include <QtCore/QJsonArray>
 #include <optional>
 using namespace QtJson;
 
@@ -48,6 +52,7 @@ QJsonValue QtJson::stringify(const QVariant &value, Configuration configuration)
     if (value.isNull())
         return QJsonValue::Null;
 
+    // check for objects/gadgets
     const auto type = value.userType();
     const auto mo = QMetaType::metaObjectForType(type);
     if (mo && !MetaExceptions.contains(type)) {
@@ -104,5 +109,24 @@ QJsonValue QtJson::stringify(const QVariant &value, Configuration configuration)
         }
     }
 
+    // check for lists
+    if (value.canConvert(QMetaType::QVariantList)) {
+        QJsonArray jList;
+        for (const auto element : value.value<QSequentialIterable>())
+            jList.append(stringify(element, configuration));
+        return jList;
+    }
+
+    // check for maps
+    if (value.canConvert(QMetaType::QVariantMap) ||
+        value.canConvert(QMetaType::QVariantHash)) {
+        const auto iterator = value.value<QAssociativeIterable>();
+        QJsonObject jMap;
+        for (auto it = iterator.begin(), end = iterator.end(); it != end; ++it)
+            jMap.insert(it.key().toString(), stringify(it.value(), configuration));
+        return jMap;
+    }
+
+    // all other cases: default convert
     return QJsonValue::fromVariant(value);
 }
