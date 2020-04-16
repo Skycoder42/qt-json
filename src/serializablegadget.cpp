@@ -1,5 +1,6 @@
 #include "serializablegadget.h"
 #include "qtjson_common_p.h"
+#include "qtjson_exception.h"
 #include <QtCore/QMetaProperty>
 #include <QtCore/QJsonObject>
 #include <QtCore/QCborMap>
@@ -32,10 +33,9 @@ void SerializableGadget::assignJson(const QJsonValue &value)
         if (!property.isStored())
             continue;
         // TODO check for: enum, ISerializable
-        const auto value = jObj.value(QString::fromUtf8(property.name())).toVariant();
-        if (!property.writeOnGadget(this, value)) {
-            // TODO throw
-        }
+        const auto var = jObj.value(QString::fromUtf8(property.name())).toVariant();
+        if (!property.writeOnGadget(this, var))
+            throw InvalidPropertyValueException{property, var};
     }
 }
 
@@ -66,9 +66,8 @@ void SerializableGadget::assignCbor(const QCborValue &value)
         if (!property.isStored())
             continue;
         // TODO check for: enum, ISerializable
-        const auto value = cMap.value(QString::fromUtf8(property.name())).toVariant();
-        if (!property.writeOnGadget(this, value)) {
-            // TODO throw
-        }
+        const auto var = cMap.value(QString::fromUtf8(property.name())).toVariant();
+        if (!property.writeOnGadget(this, var))
+            throw InvalidPropertyValueException{property, var};
     }
 }
