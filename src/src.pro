@@ -9,8 +9,15 @@ DEFINES += QT_DEPRECATED_WARNINGS
 DEFINES += QTJSON_LIBRARY
 
 HEADERS += \
+    iserializable.h \
     qtjson.h \
-    qtjson_global.h
+    qtjson_common_p.h \
+    qtjson_global.h \
+    qtjson_metamacros.h \
+    serializablegadget.h
 
 SOURCES += \
-    qtjson.cpp
+    iserializable.cpp \
+    qtjson.cpp \
+    qtjson_common.cpp \
+    serializablegadget.cpp

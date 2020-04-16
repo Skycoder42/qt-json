@@ -6,7 +6,7 @@ int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
 
-    const auto test = QStringLiteral("test");
+    const QList<int> test = {1, 2, 3};
     qDebug() << QtJson::stringify(test);
     qDebug() << QtJson::binarify(test);
 
