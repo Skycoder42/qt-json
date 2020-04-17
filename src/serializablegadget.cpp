@@ -19,8 +19,20 @@ typename DataValueInfo<TValue>::Map serialize(const QMetaObject *metaObject, con
         if (!property.isStored())
             continue;
         const auto value = property.readOnGadget(gadget);
-        // TODO check for: enum, ISerializable
-        map.insert(QString::fromUtf8(property.name()), TValue::fromVariant(value));
+
+        if (property.isEnumType()) {
+            const auto metaEnum = property.enumerator();
+            if (metaEnum.isFlag()) {
+                map.insert(QString::fromUtf8(property.name()),
+                           QString::fromUtf8(metaEnum.valueToKeys(value.toInt())));
+            } else {
+                map.insert(QString::fromUtf8(property.name()),
+                           QString::fromUtf8(metaEnum.valueToKey(value.toInt())));
+            }
+        } else {
+            // TODO check for: ISerializable
+            map.insert(QString::fromUtf8(property.name()), TValue::fromVariant(value));
+        }
     }
     return map;
 }
@@ -34,10 +46,23 @@ void deserialize(const QMetaObject *metaObject, QtJson::SerializableGadget *gadg
         const auto property = metaObject->property(i);
         if (!property.isStored())
             continue;
-        // TODO check for: enum, ISerializable
-        const auto var = map.value(QString::fromUtf8(property.name())).toVariant();
-        if (!property.writeOnGadget(gadget, var))
-            throw InvalidPropertyValueException{property, var};
+
+        if (property.isEnumType()) {
+            const auto key = map.value(QString::fromUtf8(property.name())).toString().toUtf8();
+            const auto metaEnum = property.enumerator();
+            int value = 0;
+            if (metaEnum.isFlag())
+                value = metaEnum.keysToValue(key.constData());
+            else
+                value = metaEnum.keyToValue(key.constData());
+            if (!property.writeOnGadget(gadget, value))
+                throw InvalidPropertyValueException{property, QString::fromUtf8(key)};
+        } else {
+            // TODO check for: ISerializable
+            const auto value = map.value(QString::fromUtf8(property.name())).toVariant();
+            if (!property.writeOnGadget(gadget, value))
+                throw InvalidPropertyValueException{property, value};
+        }
     }
 }
 
