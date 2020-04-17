@@ -20,6 +20,7 @@ const QSet<int> MetaExceptions {
     QMetaType::QLocale,
 };
 
+// TODO use DataValueInfo instead
 template <typename TType>
 struct Serializer;
 

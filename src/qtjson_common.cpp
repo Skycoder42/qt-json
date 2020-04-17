@@ -1,6 +1,6 @@
 #include "qtjson_common_p.h"
 
-QVariant QtJson::findInfo(const QMetaObject *metaObject, const char *key, const QVariant &defaultValue)
+QVariant QtJson::__private::findInfo(const QMetaObject *metaObject, const char *key, const QVariant &defaultValue)
 {
     const auto cIdx = metaObject->indexOfClassInfo(key);
     if (cIdx < 0)
