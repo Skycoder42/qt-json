@@ -96,4 +96,3 @@ jobs:
           asset_name: qtdatasync-${{matrix.platform}}-${{matrix.version}}
           tag: ${{github.ref}}
           overwrite: true
-      - name: upload examples to releases
