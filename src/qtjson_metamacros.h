@@ -1,8 +1,6 @@
 #ifndef QTJSON_METAMACROS_H
 #define QTJSON_METAMACROS_H
 
-#include "iserializable.h"
-
 #include <type_traits>
 
 #include <QtCore/qobjectdefs.h>

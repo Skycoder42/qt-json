@@ -1,8 +1,6 @@
 #ifndef QTJSON_EXCEPTION_H
 #define QTJSON_EXCEPTION_H
 
-#include "qtjson_global.h"
-
 #include <optional>
 
 #include <QtCore/QMetaProperty>

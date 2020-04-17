@@ -1,7 +1,6 @@
 #ifndef QTJSON_SERIALIZABLEGADGET_H
 #define QTJSON_SERIALIZABLEGADGET_H
 
-#include "qtjson_global.h"
 #include "iserializable.h"
 #include "qtjson_metamacros.h"
 

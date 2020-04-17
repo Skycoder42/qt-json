@@ -1,8 +1,6 @@
 #ifndef QTJSON_ISERIALIZABLE_H
 #define QTJSON_ISERIALIZABLE_H
 
-#include "qtjson_global.h"
-
 #include <QtCore/QJsonValue>
 #include <QtCore/QCborValue>
 

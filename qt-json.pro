@@ -1,7 +1,13 @@
 TEMPLATE = subdirs
 
-SUBDIRS += \
-    demo \
-    src
+SUBDIRS += lib
 
-demo.depends += src
+!cross_compile {
+    SUBDIRS += demo
+    demo.depends += lib
+}
+
+OTHER_FILES += \
+    README.md \
+    qt-json.pri \
+    .github/workflows/build.yml

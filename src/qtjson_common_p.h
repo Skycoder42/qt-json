@@ -1,8 +1,6 @@
 #ifndef QTJSON_COMMON_H
 #define QTJSON_COMMON_H
 
-#include "qtjson_global.h"
-
 #include <optional>
 
 #include <QtCore/QMetaClassInfo>
