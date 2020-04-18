@@ -3,6 +3,7 @@
 
 #include <optional>
 
+#include <QtCore/QtGlobal>
 #include <QtCore/QMetaProperty>
 #include <QtCore/QVariant>
 
@@ -13,7 +14,7 @@ using ExceptionBase = QException;
 }
 #else
 #include <exception>
-namespace QtJsonSerializer {
+namespace QtJson {
 using ExceptionBase = std::exception;
 }
 #endif
