@@ -10,4 +10,5 @@ SUBDIRS += lib
 OTHER_FILES += \
     README.md \
     qt-json.pri \
-    .github/workflows/build.yml
+    .github/workflows/build.yml \
+    .qmake.conf
