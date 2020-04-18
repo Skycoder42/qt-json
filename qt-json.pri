@@ -1,4 +1,4 @@
-CONFIG *= c++17 exceptions
+CONFIG += c++17 exceptions
 
 HEADERS += \
     $$PWD/src/configuration.h \
