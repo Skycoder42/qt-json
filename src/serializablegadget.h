@@ -12,10 +12,10 @@ class QTJSON_EXPORT SerializableGadget : public ISerializable
     Q_GADGET
 
 public:
-    Q_INVOKABLE QJsonValue toJson() const override;
-    Q_INVOKABLE void assignJson(const QJsonValue &value) override;
-    Q_INVOKABLE QCborValue toCbor() const override;
-    Q_INVOKABLE void assignCbor(const QCborValue &value) override;
+    Q_INVOKABLE QJsonValue toJson(const JsonConfiguration &config = {}) const override;
+    Q_INVOKABLE void assignJson(const QJsonValue &value, const JsonConfiguration &config = {}) override;
+    Q_INVOKABLE QCborValue toCbor(const CborConfiguration &config = {}) const override;
+    Q_INVOKABLE void assignCbor(const QCborValue &value, const CborConfiguration &config = {}) override;
 
 protected:
     virtual const QMetaObject *getMetaObject() const = 0;

@@ -36,6 +36,37 @@ InvalidPropertyValueException::InvalidPropertyValueException(const QMetaProperty
     }
 {}
 
+InvalidPropertyValueException::InvalidPropertyValueException(const QMetaProperty &property, const QJsonValue &value) :
+    Exception{
+        QByteArrayLiteral("Unabled to set property ") +
+        property.name() +
+        " off " +
+        property.enclosingMetaObject()->className() +
+        ": Variant of type " +
+        QByteArray::number(value.type()) +
+        " cannot be convert to \"" +
+        property.typeName() +
+        "\""
+    }
+{}
+
+InvalidPropertyValueException::InvalidPropertyValueException(const QMetaProperty &property, const QCborValue &value) :
+    Exception{
+        QByteArrayLiteral("Unabled to set property ") +
+        property.name() +
+        " off " +
+        property.enclosingMetaObject()->className() +
+        ": Variant of type " +
+        QByteArray::number(value.type()) +
+        (value.isTag() ?
+            " (Tag: " + QByteArray::number(static_cast<quint64>(value.tag())) + ")" :
+            QByteArray{}) +
+        " cannot be convert to \"" +
+        property.typeName() +
+        "\""
+    }
+{}
+
 void InvalidPropertyValueException::raise() const
 {
     throw *this;

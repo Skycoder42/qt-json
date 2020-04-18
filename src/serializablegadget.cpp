@@ -10,7 +10,7 @@ using namespace QtJson::__private;
 namespace {
 
 template <typename TValue>
-typename DataValueInfo<TValue>::Map serialize(const QMetaObject *metaObject, const QtJson::SerializableGadget *gadget)
+typename DataValueInfo<TValue>::Map serialize(const QMetaObject *metaObject, const QtJson::SerializableGadget *gadget, const typename DataValueInfo<TValue>::Config &config)
 {
     const auto offset = findInfo<int>(metaObject, QTJSON_PROPERTY_OFFSET_KEY, 0);
     typename DataValueInfo<TValue>::Map map;
@@ -21,14 +21,17 @@ typename DataValueInfo<TValue>::Map serialize(const QMetaObject *metaObject, con
         const auto value = property.readOnGadget(gadget);
 
         if (property.isEnumType()) {
-            const auto metaEnum = property.enumerator();
-            if (metaEnum.isFlag()) {
-                map.insert(QString::fromUtf8(property.name()),
-                           QString::fromUtf8(metaEnum.valueToKeys(value.toInt())));
-            } else {
-                map.insert(QString::fromUtf8(property.name()),
-                           QString::fromUtf8(metaEnum.valueToKey(value.toInt())));
-            }
+            if (config.enumAsString) {
+                const auto metaEnum = property.enumerator();
+                if (metaEnum.isFlag()) {
+                    map.insert(QString::fromUtf8(property.name()),
+                               QString::fromUtf8(metaEnum.valueToKeys(value.toInt())));
+                } else {
+                    map.insert(QString::fromUtf8(property.name()),
+                               QString::fromUtf8(metaEnum.valueToKey(value.toInt())));
+                }
+            } else
+                map.insert(QString::fromUtf8(property.name()), value.toInt());
         } else {
             // TODO check for: ISerializable
             map.insert(QString::fromUtf8(property.name()), TValue::fromVariant(value));
@@ -38,7 +41,7 @@ typename DataValueInfo<TValue>::Map serialize(const QMetaObject *metaObject, con
 }
 
 template <typename TValue>
-void deserialize(const QMetaObject *metaObject, QtJson::SerializableGadget *gadget, const typename DataValueInfo<TValue>::Map &map)
+void deserialize(const QMetaObject *metaObject, QtJson::SerializableGadget *gadget, const typename DataValueInfo<TValue>::Map &map, const typename DataValueInfo<TValue>::Config &config)
 {
     const auto offset = findInfo<int>(metaObject, QTJSON_PROPERTY_OFFSET_KEY, 0);
     // TODO check for strict rules
@@ -47,16 +50,28 @@ void deserialize(const QMetaObject *metaObject, QtJson::SerializableGadget *gadg
         if (!property.isStored())
             continue;
 
+        const auto value = map.value(QString::fromUtf8(property.name()));
         if (property.isEnumType()) {
-            const auto key = map.value(QString::fromUtf8(property.name())).toString().toUtf8();
-            const auto metaEnum = property.enumerator();
-            int value = 0;
-            if (metaEnum.isFlag())
-                value = metaEnum.keysToValue(key.constData());
-            else
-                value = metaEnum.keyToValue(key.constData());
-            if (!property.writeOnGadget(gadget, value))
-                throw InvalidPropertyValueException{property, QString::fromUtf8(key)};
+            if (config.enumAsString) {
+                const auto key = value.toString().toUtf8();
+                const auto metaEnum = property.enumerator();
+                int intVal = 0;
+                if (metaEnum.isFlag())
+                    intVal = metaEnum.keysToValue(key.constData());
+                else
+                    intVal = metaEnum.keyToValue(key.constData());
+                if (!property.writeOnGadget(gadget, intVal))
+                    throw InvalidPropertyValueException{property, value};
+            } else {
+                if constexpr(std::is_same_v<TValue, QCborValue>) {
+                    if (!property.writeOnGadget(gadget, static_cast<int>(value.toInteger())))
+                        throw InvalidPropertyValueException{property, value};
+                } else {
+                    if (!property.writeOnGadget(gadget, value.toInt()))
+                        throw InvalidPropertyValueException{property, value};
+                }
+
+            }
         } else {
             // TODO check for: ISerializable
             const auto value = map.value(QString::fromUtf8(property.name())).toVariant();
@@ -68,22 +83,22 @@ void deserialize(const QMetaObject *metaObject, QtJson::SerializableGadget *gadg
 
 }
 
-QJsonValue SerializableGadget::toJson() const
+QJsonValue SerializableGadget::toJson(const JsonConfiguration &config) const
 {
-    return serialize<QJsonValue>(getMetaObject(), this);
+    return serialize<QJsonValue>(getMetaObject(), this, config);
 }
 
-void SerializableGadget::assignJson(const QJsonValue &value)
+void SerializableGadget::assignJson(const QJsonValue &value, const JsonConfiguration &config)
 {
-    deserialize<QJsonValue>(getMetaObject(), this, value.toObject());
+    deserialize<QJsonValue>(getMetaObject(), this, value.toObject(), config);
 }
 
-QCborValue SerializableGadget::toCbor() const
+QCborValue SerializableGadget::toCbor(const CborConfiguration &config) const
 {
-    return serialize<QCborValue>(getMetaObject(), this);
+    return serialize<QCborValue>(getMetaObject(), this, config);
 }
 
-void SerializableGadget::assignCbor(const QCborValue &value)
+void SerializableGadget::assignCbor(const QCborValue &value, const CborConfiguration &config)
 {
-    deserialize<QCborValue>(getMetaObject(), this, value.toMap());
+    deserialize<QCborValue>(getMetaObject(), this, value.toMap(), config);
 }

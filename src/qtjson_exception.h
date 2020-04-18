@@ -5,6 +5,8 @@
 #include <QtCore/QtGlobal>
 #include <QtCore/QMetaProperty>
 #include <QtCore/QVariant>
+#include <QtCore/QJsonValue>
+#include <QtCore/QCborValue>
 
 #if !defined(QT_NO_EXCEPTIONS) && QT_CONFIG(future)
 #include <QtCore/qexception.h>
@@ -39,6 +41,8 @@ class QTJSON_EXPORT InvalidPropertyValueException : public Exception
 {
 public:
     InvalidPropertyValueException(const QMetaProperty &property, const QVariant &value);
+    InvalidPropertyValueException(const QMetaProperty &property, const QJsonValue &value);
+    InvalidPropertyValueException(const QMetaProperty &property, const QCborValue &value);
 
     void raise() const override;
     ExceptionBase *clone() const override;
