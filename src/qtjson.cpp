@@ -10,17 +10,12 @@
 #include <QtCore/QJsonArray>
 #include <QtCore/QCborMap>
 #include <QtCore/QCborArray>
+#include <QtCore/QReadWriteLock>
 #include <optional>
 using namespace QtJson;
 using namespace QtJson::__private;
 
 namespace {
-
-const QSet<int> MetaExceptions {
-    QMetaType::QKeySequence,
-    QMetaType::QFont,
-    QMetaType::QLocale,
-};
 
 template <typename TType>
 typename DataValueInfo<TType>::Value serialize(const QVariant &value, const typename DataValueInfo<TType>::Config &configuration);
@@ -53,6 +48,12 @@ typename DataValueInfo<TType>::Map mapObject(QObject *object, const typename Dat
     }
     return map;
 }
+
+const QSet<int> MetaExceptions {
+    QMetaType::QKeySequence,
+    QMetaType::QFont,
+    QMetaType::QLocale,
+};
 
 template <typename TType>
 typename DataValueInfo<TType>::Value serialize(const QVariant &value, const typename DataValueInfo<TType>::Config &configuration)
@@ -148,6 +149,9 @@ typename DataValueInfo<TType>::Value serialize(const QVariant &value, const type
     return DataValueInfo<TType>::Value::fromVariant(value);
 }
 
+QReadWriteLock wrapperFactoriesLock;
+QHash<int, ISerializableWrapperFactory*> wrapperFactories;
+
 }
 
 QJsonValue QtJson::stringify(const QVariant &value, const JsonConfiguration &configuration)
@@ -158,4 +162,15 @@ QJsonValue QtJson::stringify(const QVariant &value, const JsonConfiguration &con
 QCborValue QtJson::binarify(const QVariant &value, const CborConfiguration &configuration)
 {
     return serialize<QCborValue>(value, configuration);
+}
+
+void QtJson::registerWrapperFactory(int typeId, ISerializableWrapperFactory *factory)
+{
+    QWriteLocker lock{&wrapperFactoriesLock};
+    if (const auto it = wrapperFactories.find(typeId); it != wrapperFactories.end()) {
+        delete *it;
+        *it = factory;
+    } else
+        wrapperFactories.insert(typeId, factory);
+
 }

@@ -9,7 +9,9 @@ namespace QtJson {
 
 class QTJSON_EXPORT ISerializable
 {
+    Q_DISABLE_COPY(ISerializable)
 public:
+    ISerializable();
     virtual ~ISerializable();
 
     virtual QJsonValue toJson(const JsonConfiguration &config = {}) const = 0;
