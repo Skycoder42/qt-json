@@ -1,5 +1,4 @@
-#ifndef QTJSON_EXCEPTION_H
-#define QTJSON_EXCEPTION_H
+#pragma once
 
 #include <optional>
 
@@ -48,5 +47,3 @@ private:
 };
 
 }
-
-#endif // QTJSON_EXCEPTION_H

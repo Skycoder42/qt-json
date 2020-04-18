@@ -1,5 +1,4 @@
-#ifndef QTJSON_METAMACROS_H
-#define QTJSON_METAMACROS_H
+#pragma once
 
 #include <type_traits>
 
@@ -20,5 +19,3 @@
 #define QTJSON_PROP(name, ...) \
     Q_PROPERTY(__VA_ARGS__ name MEMBER name STORED true) \
     QTJSON_SERIALIZABLE_PROP(name, __VA_ARGS__)
-
-#endif // QTJSON_METAMACROS_H

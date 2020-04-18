@@ -1,6 +1,7 @@
 CONFIG *= c++17 exceptions
 
 HEADERS += \
+    $$PWD/src/configuration.h \
     $$PWD/src/iserializable.h \
     $$PWD/src/qtjson.h \
     $$PWD/src/qtjson_common_p.h \

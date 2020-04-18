@@ -1,5 +1,4 @@
-#ifndef QTJSON_SERIALIZABLEGADGET_H
-#define QTJSON_SERIALIZABLEGADGET_H
+#pragma once
 
 #include "iserializable.h"
 #include "qtjson_metamacros.h"
@@ -44,5 +43,3 @@ protected:
         } \
         \
     private:
-
-#endif // QTJSON_SERIALIZABLEGADGET_H

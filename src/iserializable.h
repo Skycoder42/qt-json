@@ -1,5 +1,4 @@
-#ifndef QTJSON_ISERIALIZABLE_H
-#define QTJSON_ISERIALIZABLE_H
+#pragma once
 
 #include <QtCore/QJsonValue>
 #include <QtCore/QCborValue>
@@ -19,5 +18,3 @@ public:
 };
 
 }
-
-#endif // QTJSON_ISERIALIZABLE_H

@@ -1,5 +1,6 @@
-#ifndef QTJSON_H
-#define QTJSON_H
+#pragma once
+
+#include "configuration.h"
 
 #include <QtCore/QJsonValue>
 #include <QtCore/QCborValue>
@@ -8,22 +9,15 @@
 namespace QtJson
 {
 
-struct Configuration {
-    bool keepObjectName = true;
-    bool enumAsString = true;
-};
-
-QTJSON_EXPORT QJsonValue stringify(const QVariant &value, const Configuration &configuration = {});
-QTJSON_EXPORT QCborValue binarify(const QVariant &value, const Configuration &configuration = {});
+QTJSON_EXPORT QJsonValue stringify(const QVariant &value, const JsonConfiguration &configuration = {});
+QTJSON_EXPORT QCborValue binarify(const QVariant &value, const CborConfiguration &configuration = {});
 
 template <typename TValue>
-inline QJsonValue stringify(const TValue &value, const Configuration &configuration = {}) {
+inline QJsonValue stringify(const TValue &value, const JsonConfiguration &configuration = {}) {
     return stringify(QVariant::fromValue(value), configuration);
 }
 
 template <typename TValue>
-inline QCborValue binarify(const TValue &value, const Configuration &configuration = {}) {
+inline QCborValue binarify(const TValue &value, const CborConfiguration &configuration = {}) {
     return binarify(QVariant::fromValue(value), configuration);}
 };
-
-#endif // QTJSON_H

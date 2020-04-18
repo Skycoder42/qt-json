@@ -1,5 +1,6 @@
-#ifndef QTJSON_COMMON_H
-#define QTJSON_COMMON_H
+#pragma once
+
+#include "configuration.h"
 
 #include <optional>
 
@@ -18,6 +19,7 @@ struct DataValueInfo<QJsonValue> {
     using Value = QJsonValue;
     using Map = QJsonObject;
     using List = QJsonArray;
+    using Config = JsonConfiguration;
 
     static constexpr auto Undefined = QJsonValue::Undefined;
     static constexpr auto Null = QJsonValue::Null;
@@ -28,6 +30,7 @@ struct DataValueInfo<QCborValue> {
     using Value = QCborValue;
     using Map = QCborMap;
     using List = QCborArray;
+    using Config = CborConfiguration;
 
     static constexpr auto Undefined = QCborValue::Undefined;
     static constexpr auto Null = QCborValue::Null;
@@ -50,5 +53,3 @@ T findInfo(const QMetaObject *metaObject, const char *key, const T &defaultValue
 }
 
 }
-
-#endif // QTJSON_COMMON_H
