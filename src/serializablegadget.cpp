@@ -2,12 +2,38 @@
 #include "qtjson_common_p.h"
 #include "qtjson_exception.h"
 #include <QtCore/QMetaProperty>
+#include <QtCore/QMetaMethod>
 #include <QtCore/QJsonObject>
 #include <QtCore/QCborMap>
 using namespace QtJson;
 using namespace QtJson::__private;
 
 namespace {
+
+QByteArray serializablePropInfoName(const QMetaProperty &property)
+{
+    const auto rawName = QByteArrayLiteral(QTJSON_SERIALIZABLE_PROP_KEY_STR) +
+                         property.name() +
+                         QByteArrayLiteral("()");
+    return QMetaObject::normalizedSignature(rawName);
+}
+
+ISerializable *asSerializable(const QtJson::SerializableGadget *gadget,
+                              const QMetaObject *mo,
+                              const QMetaProperty &property,
+                              QVariant &variant)
+{
+    const auto mIdx = mo->indexOfMethod(serializablePropInfoName(property));
+    if (mIdx < 0)
+        return nullptr;
+    const auto method = mo->method(mIdx);
+    bool isSerializable = false;
+    if (method.invokeOnGadget(const_cast<QtJson::SerializableGadget*>(gadget),
+                              Q_RETURN_ARG(bool, isSerializable)))
+        return reinterpret_cast<ISerializable*>(variant.data());
+    else
+        return nullptr;
+}
 
 template <typename TValue>
 typename DataValueInfo<TValue>::Map serialize(const QMetaObject *metaObject, const QtJson::SerializableGadget *gadget, const typename DataValueInfo<TValue>::Config &config)
@@ -18,24 +44,29 @@ typename DataValueInfo<TValue>::Map serialize(const QMetaObject *metaObject, con
         const auto property = metaObject->property(i);
         if (!property.isStored())
             continue;
-        const auto value = property.readOnGadget(gadget);
 
-        if (property.isEnumType()) {
+        auto variant = property.readOnGadget(gadget);
+        typename DataValueInfo<TValue>::Value value {DataValueInfo<TValue>::Undefined};
+
+        if (const auto serializable = asSerializable(gadget, metaObject, property, variant);
+            serializable) {
+            if constexpr (std::is_same_v<TValue, QCborValue>)
+                value = serializable->toCbor(config);
+            else
+                value = serializable->toJson(config);
+        } else if (property.isEnumType()) {
             if (config.enumAsString) {
                 const auto metaEnum = property.enumerator();
-                if (metaEnum.isFlag()) {
-                    map.insert(QString::fromUtf8(property.name()),
-                               QString::fromUtf8(metaEnum.valueToKeys(value.toInt())));
-                } else {
-                    map.insert(QString::fromUtf8(property.name()),
-                               QString::fromUtf8(metaEnum.valueToKey(value.toInt())));
-                }
+                if (metaEnum.isFlag())
+                    value = QString::fromUtf8(metaEnum.valueToKeys(variant.toInt()));
+                else
+                    value = QString::fromUtf8(metaEnum.valueToKey(variant.toInt()));
             } else
-                map.insert(QString::fromUtf8(property.name()), value.toInt());
-        } else {
-            // TODO check for: ISerializable
-            map.insert(QString::fromUtf8(property.name()), TValue::fromVariant(value));
-        }
+                value = variant.toInt();
+        } else
+            value = TValue::fromVariant(variant);
+
+        map.insert(QString::fromUtf8(property.name()), value);
     }
     return map;
 }
@@ -51,33 +82,33 @@ void deserialize(const QMetaObject *metaObject, QtJson::SerializableGadget *gadg
             continue;
 
         const auto value = map.value(QString::fromUtf8(property.name()));
-        if (property.isEnumType()) {
+        QVariant variant{property.userType(), nullptr};
+
+        if (const auto serializable = asSerializable(gadget, metaObject, property, variant);
+            serializable) {
+            if constexpr (std::is_same_v<TValue, QCborValue>)
+                serializable->assignCbor(value, config);
+            else
+                serializable->assignJson(value, config);
+        } else if (property.isEnumType()) {
             if (config.enumAsString) {
                 const auto key = value.toString().toUtf8();
                 const auto metaEnum = property.enumerator();
-                int intVal = 0;
                 if (metaEnum.isFlag())
-                    intVal = metaEnum.keysToValue(key.constData());
+                    variant = metaEnum.keysToValue(key.constData());
                 else
-                    intVal = metaEnum.keyToValue(key.constData());
-                if (!property.writeOnGadget(gadget, intVal))
-                    throw InvalidPropertyValueException{property, value};
+                    variant = metaEnum.keyToValue(key.constData());
             } else {
-                if constexpr(std::is_same_v<TValue, QCborValue>) {
-                    if (!property.writeOnGadget(gadget, static_cast<int>(value.toInteger())))
-                        throw InvalidPropertyValueException{property, value};
-                } else {
-                    if (!property.writeOnGadget(gadget, value.toInt()))
-                        throw InvalidPropertyValueException{property, value};
-                }
-
+                if constexpr(std::is_same_v<TValue, QCborValue>)
+                    variant = static_cast<int>(value.toInteger());
+                else
+                    variant = value.toInt();
             }
-        } else {
-            // TODO check for: ISerializable
-            const auto value = map.value(QString::fromUtf8(property.name())).toVariant();
-            if (!property.writeOnGadget(gadget, value))
-                throw InvalidPropertyValueException{property, value};
-        }
+        } else
+            variant = value.toVariant();
+
+        if (!property.writeOnGadget(gadget, variant))
+            throw InvalidPropertyValueException{property, value};
     }
 }
 
