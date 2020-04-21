@@ -7,10 +7,10 @@
 namespace QtJson {
 
 template <typename T>
-class SerializableWrapper : public ISerializable
+class SerializableWrapperBase : public ISerializable
 {
-	inline SerializableWrapper() :
-		_value{new T{}}  // TODO
+    inline SerializableWrapperBase(void *value) :
+        _value{reinterpret_cast<T*>(value)}
 	{}
 
 protected:
@@ -25,7 +25,11 @@ private:
 	T *_value;
 };
 
-class QTJSON_EXPORT QByteArraySerializableWrapper : public SerializableWrapper<QByteArray>
+template <typename T>
+class SerializableWrapper;
+
+template <>
+class QTJSON_EXPORT SerializableWrapper<QByteArray> : public SerializableWrapperBase<QByteArray>
 {
 public:
 	QJsonValue toJson(const JsonConfiguration &config) const override;
