@@ -51,3 +51,32 @@ void SerializableWrapper<QByteArray>::assignCbor(const QCborValue &value, const 
     Q_UNUSED(config);
 	setValue(value.toByteArray());
 }
+
+
+
+QJsonValue QtJson::SerializableWrapper<QDateTime>::toJson(const JsonConfiguration &config) const
+{
+    if (config.dateAsTimeStamp)
+        return value().toUTC().toSecsSinceEpoch();
+    else {
+        if (value().timeSpec() == Qt::LocalTime)
+            return value().toOffsetFromUtc(value().offsetFromUtc()).toString(Qt::ISODateWithMs);
+        else
+            return value().toString(Qt::ISODateWithMs);
+    }
+}
+
+void QtJson::SerializableWrapper<QDateTime>::assignJson(const QJsonValue &value, const JsonConfiguration &config)
+{
+
+}
+
+QCborValue QtJson::SerializableWrapper<QDateTime>::toCbor(const CborConfiguration &config) const
+{
+    return {};
+}
+
+void QtJson::SerializableWrapper<QDateTime>::assignCbor(const QCborValue &value, const CborConfiguration &config)
+{
+
+}

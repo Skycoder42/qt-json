@@ -3,6 +3,7 @@
 #include "iserializable.h"
 
 #include <QtCore/QByteArray>
+#include <QtCore/QDateTime>
 
 namespace QtJson {
 
@@ -36,6 +37,16 @@ public:
 	void assignJson(const QJsonValue &value, const JsonConfiguration &config) override;
 	QCborValue toCbor(const CborConfiguration &config) const override;
 	void assignCbor(const QCborValue &value, const CborConfiguration &config) override;
+};
+
+template <>
+class QTJSON_EXPORT SerializableWrapper<QDateTime> : public SerializableWrapperBase<QDateTime>
+{
+public:
+    QJsonValue toJson(const JsonConfiguration &config) const override;
+    void assignJson(const QJsonValue &value, const JsonConfiguration &config) override;
+    QCborValue toCbor(const CborConfiguration &config) const override;
+    void assignCbor(const QCborValue &value, const CborConfiguration &config) override;
 };
 
 }

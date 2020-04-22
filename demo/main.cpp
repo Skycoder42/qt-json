@@ -1,5 +1,4 @@
-#include <QCoreApplication>
-#include <QDebug>
+#include <QtCore>
 #include <qtjson.h>
 
 int main(int argc, char *argv[])
