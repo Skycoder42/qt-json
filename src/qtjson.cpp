@@ -1,6 +1,7 @@
 #include "qtjson.h"
 #include "qtjson_p.h"
 #include "qtjson_common_p.h"
+#include "serializablewrapper.h"
 #include <QtCore/QSet>
 #include <QtCore/QMetaProperty>
 #include <QtCore/QSharedPointer>
@@ -151,7 +152,10 @@ typename DataValueInfo<TType>::Value serialize(const QVariant &value, const type
 }
 
 QReadWriteLock wrapperFactoriesLock;
-QHash<int, ISerializableWrapperFactory*> wrapperFactories;
+QHash<int, ISerializableWrapperFactory*> wrapperFactories {
+    {QMetaType::QByteArray, new SerializableWrapper<QByteArray>::Factory{}},
+    {QMetaType::QDateTime, new SerializableWrapper<QDateTime>::Factory{}},
+};
 
 }
 

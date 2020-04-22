@@ -11,6 +11,51 @@ using namespace QtJson::__private;
 
 namespace {
 
+struct SerializableContainer
+{
+    Q_DISABLE_COPY(SerializableContainer)
+public:
+    inline SerializableContainer(std::nullptr_t) {};
+
+    inline SerializableContainer(ISerializable *serializable, bool cleanup) :
+        _serializable{serializable},
+        _cleanup{cleanup}
+    {}
+
+    inline SerializableContainer(SerializableContainer &&other) noexcept
+    {
+        qSwap(_serializable, other._serializable);
+        qSwap(_cleanup, other._cleanup);
+    }
+
+    inline SerializableContainer &operator=(SerializableContainer &&other) noexcept
+    {
+        qSwap(_serializable, other._serializable);
+        qSwap(_cleanup, other._cleanup);
+        return *this;
+    }
+
+    inline ~SerializableContainer() {
+        if (_cleanup && _serializable)
+            delete _serializable;
+    }
+
+    inline explicit operator bool() const {
+        return _serializable;
+    }
+    inline bool operator!() const {
+        return !_serializable;
+    }
+
+    inline ISerializable *operator->() const {
+        return _serializable;
+    }
+
+private:
+    ISerializable *_serializable = nullptr;
+    bool _cleanup = false;
+};
+
 QByteArray serializablePropInfoName(const QMetaProperty &property)
 {
 	const auto rawName = QByteArrayLiteral(QTJSON_SERIALIZABLE_PROP_KEY_STR) +
@@ -19,7 +64,7 @@ QByteArray serializablePropInfoName(const QMetaProperty &property)
 	return QMetaObject::normalizedSignature(rawName);
 }
 
-ISerializable *asSerializable(const QtJson::SerializableGadget *gadget,
+SerializableContainer asSerializable(const QtJson::SerializableGadget *gadget,
 							  const QMetaObject *mo,
 							  const QMetaProperty &property,
 							  QVariant &variant)
@@ -30,15 +75,15 @@ ISerializable *asSerializable(const QtJson::SerializableGadget *gadget,
 		const auto method = mo->method(mIdx);
 		bool isSerializable = false;
 		if (method.invokeOnGadget(const_cast<QtJson::SerializableGadget*>(gadget),
-								  Q_RETURN_ARG(bool, isSerializable))) {
-			return reinterpret_cast<ISerializable*>(variant.data());
+                                  Q_RETURN_ARG(bool, isSerializable))) {
+            return {reinterpret_cast<ISerializable*>(variant.data()), false};
 		}
 	}
 
-	// check for global
-	const auto wrapper = getWrapperFactory(property.userType());
-	if (wrapper)
-		return wrapper->createWrapper(variant.data());
+    // check for global
+    const auto wrapper = getWrapperFactory(property.userType());
+    if (wrapper)
+        return {wrapper->createWrapper(variant.data()), true};
 
 	return nullptr;
 }
@@ -53,8 +98,10 @@ typename DataValueInfo<TValue>::Map serialize(const QMetaObject *metaObject, con
 		if (!property.isStored())
 			continue;
 
-		auto variant = property.readOnGadget(gadget);
-		typename DataValueInfo<TValue>::Value value {DataValueInfo<TValue>::Undefined};
+        typename DataValueInfo<TValue>::Value value {DataValueInfo<TValue>::Undefined};
+        auto variant = property.readOnGadget(gadget);
+        if (!variant.isValid())
+            continue;
 
 		if (const auto serializable = asSerializable(gadget, metaObject, property, variant);
 			serializable) {

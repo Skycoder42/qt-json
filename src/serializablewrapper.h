@@ -1,6 +1,7 @@
 #pragma once
 
 #include "iserializable.h"
+#include "iserializablewrapperfactory.h"
 
 #include <QtCore/QByteArray>
 #include <QtCore/QDateTime>
@@ -8,10 +9,21 @@
 namespace QtJson {
 
 template <typename T>
+class SerializableWrapper;
+
+template <typename T>
 class SerializableWrapperBase : public ISerializable
 {
-    inline SerializableWrapperBase(void *value) :
-        _value{reinterpret_cast<T*>(value)}
+public:
+    class Factory : public ITypedSerializableWrapperFactory<T> {
+    public:
+        inline ISerializable *createWrapper(T *data) const override {
+            return new SerializableWrapper<T>(data);
+        }
+    };
+
+    inline SerializableWrapperBase(T *value) :
+        _value{value}
 	{}
 
 protected:
@@ -26,13 +38,12 @@ private:
 	T *_value;
 };
 
-template <typename T>
-class SerializableWrapper;
-
 template <>
 class QTJSON_EXPORT SerializableWrapper<QByteArray> : public SerializableWrapperBase<QByteArray>
 {
 public:
+    using SerializableWrapperBase::SerializableWrapperBase;
+
 	QJsonValue toJson(const JsonConfiguration &config) const override;
 	void assignJson(const QJsonValue &value, const JsonConfiguration &config) override;
 	QCborValue toCbor(const CborConfiguration &config) const override;
@@ -43,6 +54,8 @@ template <>
 class QTJSON_EXPORT SerializableWrapper<QDateTime> : public SerializableWrapperBase<QDateTime>
 {
 public:
+    using SerializableWrapperBase::SerializableWrapperBase;
+
     QJsonValue toJson(const JsonConfiguration &config) const override;
     void assignJson(const QJsonValue &value, const JsonConfiguration &config) override;
     QCborValue toCbor(const CborConfiguration &config) const override;
