@@ -5,8 +5,6 @@
 
 namespace QtJson::__private {
 
-QTJSON_EXPORT ISerializableWrapperFactory *getWrapperFactory(int typeId);
-
 }
 
 #endif // QT_JSON_P_H

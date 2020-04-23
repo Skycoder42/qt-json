@@ -1,7 +1,6 @@
 #pragma once
 
 #include "configuration.h"
-#include "iserializablewrapperfactory.h"
 
 #include <QtCore/QJsonValue>
 #include <QtCore/QCborValue>
@@ -20,12 +19,6 @@ QTJSON_EXPORT QCborValue binarify(const QVariant &value, const CborConfiguration
 template <typename TValue>
 inline QCborValue binarify(const TValue &value, const CborConfiguration &configuration = {}) {
     return binarify(QVariant::fromValue(value), configuration);
-}
-
-QTJSON_EXPORT void registerWrapperFactory(int typeId, ISerializableWrapperFactory *factory);
-template <typename TType>
-void registerWrapperFactory(ITypedSerializableWrapperFactory<TType> * factory) {
-    registerWrapperFactory(qMetaTypeId<TType>(), factory);
 }
 
 }

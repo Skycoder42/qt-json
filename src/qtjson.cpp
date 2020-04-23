@@ -1,7 +1,6 @@
 #include "qtjson.h"
 #include "qtjson_p.h"
 #include "qtjson_common_p.h"
-#include "serializablewrapper.h"
 #include <QtCore/QSet>
 #include <QtCore/QMetaProperty>
 #include <QtCore/QSharedPointer>
@@ -12,7 +11,6 @@
 #include <QtCore/QJsonArray>
 #include <QtCore/QCborMap>
 #include <QtCore/QCborArray>
-#include <QtCore/QReadWriteLock>
 #include <optional>
 using namespace QtJson;
 using namespace QtJson::__private;
@@ -151,12 +149,6 @@ typename DataValueInfo<TType>::Value serialize(const QVariant &value, const type
 	return DataValueInfo<TType>::Value::fromVariant(value);
 }
 
-QReadWriteLock wrapperFactoriesLock;
-QHash<int, ISerializableWrapperFactory*> wrapperFactories {
-    {QMetaType::QByteArray, new SerializableWrapper<QByteArray>::Factory{}},
-    {QMetaType::QDateTime, new SerializableWrapper<QDateTime>::Factory{}},
-};
-
 }
 
 QJsonValue QtJson::stringify(const QVariant &value, const JsonConfiguration &configuration)
@@ -167,21 +159,4 @@ QJsonValue QtJson::stringify(const QVariant &value, const JsonConfiguration &con
 QCborValue QtJson::binarify(const QVariant &value, const CborConfiguration &configuration)
 {
 	return serialize<QCborValue>(value, configuration);
-}
-
-void QtJson::registerWrapperFactory(int typeId, ISerializableWrapperFactory *factory)
-{
-	QWriteLocker lock{&wrapperFactoriesLock};
-	if (const auto it = wrapperFactories.find(typeId); it != wrapperFactories.end()) {
-		delete *it;
-		*it = factory;
-	} else
-		wrapperFactories.insert(typeId, factory);
-
-}
-
-ISerializableWrapperFactory *QtJson::__private::getWrapperFactory(int typeId)
-{
-	QReadLocker lock{&wrapperFactoriesLock};
-	return wrapperFactories.value(typeId, nullptr);
 }

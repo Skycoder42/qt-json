@@ -1,7 +1,7 @@
 #include "serializablegadget.h"
-#include "qtjson_p.h"
 #include "qtjson_common_p.h"
 #include "qtjson_exception.h"
+#include "serializationadapter.h"
 #include <QtCore/QMetaProperty>
 #include <QtCore/QMetaMethod>
 #include <QtCore/QJsonObject>
@@ -10,91 +10,6 @@ using namespace QtJson;
 using namespace QtJson::__private;
 
 namespace {
-
-struct SerializableContainer
-{
-    Q_DISABLE_COPY(SerializableContainer)
-public:
-    inline SerializableContainer(std::nullptr_t) {};
-
-    inline SerializableContainer(ISerializable *serializable, bool cleanup) :
-        _serializable{serializable},
-        _cleanup{cleanup}
-    {}
-
-    inline SerializableContainer(SerializableContainer &&other) noexcept
-    {
-        qSwap(_serializable, other._serializable);
-        qSwap(_cleanup, other._cleanup);
-    }
-
-    inline SerializableContainer &operator=(SerializableContainer &&other) noexcept
-    {
-        qSwap(_serializable, other._serializable);
-        qSwap(_cleanup, other._cleanup);
-        return *this;
-    }
-
-    inline ~SerializableContainer() {
-        if (_cleanup && _serializable)
-            delete _serializable;
-    }
-
-    inline explicit operator bool() const {
-        return _serializable;
-    }
-    inline bool operator!() const {
-        return !_serializable;
-    }
-
-    inline ISerializable *operator->() const {
-        return _serializable;
-    }
-
-private:
-    ISerializable *_serializable = nullptr;
-    bool _cleanup = false;
-};
-
-QByteArray serializablePropInfoName(const QMetaProperty &property)
-{
-	const auto rawName = QByteArrayLiteral(QTJSON_SERIALIZABLE_PROP_KEY_STR) +
-						 property.name() +
-						 QByteArrayLiteral("()");
-	return QMetaObject::normalizedSignature(rawName);
-}
-
-SerializableContainer asSerializable(const QtJson::SerializableGadget *gadget,
-							  const QMetaObject *mo,
-							  const QMetaProperty &property,
-							  QVariant &variant)
-{
-    // assure variant is instance of property type
-    if (variant.userType() != property.userType() &&
-        !variant.convert(property.userType())) {
-        return nullptr;
-    }
-
-	// check if annotated
-	const auto mIdx = mo->indexOfMethod(serializablePropInfoName(property));
-	if (mIdx >= 0) {
-		const auto method = mo->method(mIdx);
-        ISerializable *serializable = nullptr;
-		if (method.invokeOnGadget(const_cast<QtJson::SerializableGadget*>(gadget),
-                                  Q_ARG(void*, variant.data()),
-                                  Q_RETURN_ARG(QtJson::ISerializable*, serializable))) {
-            if (serializable)
-                return {serializable, false};
-		}
-	}
-
-    // check for global
-    const auto wrapper = getWrapperFactory(property.userType());
-    if (wrapper)
-        return {wrapper->createWrapper(variant.data()), true};
-
-	return nullptr;
-}
 
 template <typename TValue>
 typename DataValueInfo<TValue>::Map serialize(const QMetaObject *metaObject, const QtJson::SerializableGadget *gadget, const typename DataValueInfo<TValue>::Config &config)
@@ -111,7 +26,7 @@ typename DataValueInfo<TValue>::Map serialize(const QMetaObject *metaObject, con
         if (!variant.isValid())
             continue;
 
-		if (const auto serializable = asSerializable(gadget, metaObject, property, variant);
+        if (const auto serializable = SerializationAdapter::obtainSerializable(gadget, metaObject, property, variant);
 			serializable) {
 			if constexpr (std::is_same_v<TValue, QCborValue>)
 				value = serializable->toCbor(config);
@@ -147,7 +62,7 @@ void deserialize(const QMetaObject *metaObject, QtJson::SerializableGadget *gadg
 		const auto value = map.value(QString::fromUtf8(property.name()));
 		QVariant variant{property.userType(), nullptr};
 
-		if (const auto serializable = asSerializable(gadget, metaObject, property, variant);
+        if (const auto serializable = SerializationAdapter::obtainSerializable(gadget, metaObject, property, variant);
 			serializable) {
 			if constexpr (std::is_same_v<TValue, QCborValue>)
 				serializable->assignCbor(value, config);
