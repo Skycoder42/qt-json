@@ -69,14 +69,22 @@ SerializableContainer asSerializable(const QtJson::SerializableGadget *gadget,
 							  const QMetaProperty &property,
 							  QVariant &variant)
 {
+    // assure variant is instance of property type
+    if (variant.userType() != property.userType() &&
+        !variant.convert(property.userType())) {
+        return nullptr;
+    }
+
 	// check if annotated
 	const auto mIdx = mo->indexOfMethod(serializablePropInfoName(property));
 	if (mIdx >= 0) {
 		const auto method = mo->method(mIdx);
-		bool isSerializable = false;
+        ISerializable *serializable = nullptr;
 		if (method.invokeOnGadget(const_cast<QtJson::SerializableGadget*>(gadget),
-                                  Q_RETURN_ARG(bool, isSerializable))) {
-            return {reinterpret_cast<ISerializable*>(variant.data()), false};
+                                  Q_ARG(void*, variant.data()),
+                                  Q_RETURN_ARG(QtJson::ISerializable*, serializable))) {
+            if (serializable)
+                return {serializable, false};
 		}
 	}
 
