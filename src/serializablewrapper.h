@@ -62,4 +62,7 @@ public:
     void assignCbor(const QCborValue &value, const CborConfiguration &config) override;
 };
 
+// TODO add NetworkAddress(Prefix) 260/261
+// TODO add Regular expression / mime / uuid?
+
 }

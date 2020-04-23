@@ -68,15 +68,27 @@ QJsonValue QtJson::SerializableWrapper<QDateTime>::toJson(const JsonConfiguratio
 
 void QtJson::SerializableWrapper<QDateTime>::assignJson(const QJsonValue &value, const JsonConfiguration &config)
 {
-
+    Q_UNUSED(config);
+    if (value.isDouble())
+        setValue(QDateTime::fromSecsSinceEpoch(value.toInt()));
+    else
+        setValue(QDateTime::fromString(value.toString(), Qt::ISODateWithMs));
 }
 
 QCborValue QtJson::SerializableWrapper<QDateTime>::toCbor(const CborConfiguration &config) const
 {
-    return {};
+    if (config.dateAsTimeStamp)
+        return QCborValue{QCborKnownTags::UnixTime_t, value().toUTC().toSecsSinceEpoch()};
+    else {
+        if (value().timeSpec() == Qt::LocalTime)
+            return QCborValue{value().toOffsetFromUtc(value().offsetFromUtc())};
+        else
+            return QCborValue{value()};
+    }
 }
 
 void QtJson::SerializableWrapper<QDateTime>::assignCbor(const QCborValue &value, const CborConfiguration &config)
 {
-
+    Q_UNUSED(config);
+    setValue(value.toDateTime());
 }
