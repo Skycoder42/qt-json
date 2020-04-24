@@ -11,6 +11,41 @@ using namespace QtJson::__private;
 
 namespace {
 
+QByteArray serializablePropInfoName(const QMetaProperty &property)
+{
+	const auto rawName = QByteArrayLiteral(QTJSON_SERIALIZABLE_PROP_KEY_STR) +
+						 property.name() +
+						 QByteArrayLiteral("()");
+	return QMetaObject::normalizedSignature(rawName);
+}
+
+ISerializable *asSerializable(const QtJson::SerializableGadget *gadget,
+							  const QMetaObject *mo,
+							  const QMetaProperty &property,
+							  QVariant &variant)
+{
+	// assure variant is instance of property type
+	if (variant.userType() != property.userType() &&
+		!variant.convert(property.userType())) {
+		return nullptr;
+	}
+
+	// check if annotated
+	const auto mIdx = mo->indexOfMethod(serializablePropInfoName(property));
+	if (mIdx >= 0) {
+		const auto method = mo->method(mIdx);
+		ISerializable *serializable = nullptr;
+		if (method.invokeOnGadget(const_cast<QtJson::SerializableGadget*>(gadget),
+								  Q_ARG(void*, variant.data()),
+								  Q_RETURN_ARG(QtJson::ISerializable*, serializable))) {
+			if (serializable)
+				return serializable;
+		}
+	}
+
+	return nullptr;
+}
+
 template <typename TValue>
 typename DataValueInfo<TValue>::Map serialize(const QMetaObject *metaObject, const QtJson::SerializableGadget *gadget, const typename DataValueInfo<TValue>::Config &config)
 {
@@ -21,12 +56,12 @@ typename DataValueInfo<TValue>::Map serialize(const QMetaObject *metaObject, con
 		if (!property.isStored())
 			continue;
 
-        typename DataValueInfo<TValue>::Value value {DataValueInfo<TValue>::Undefined};
-        auto variant = property.readOnGadget(gadget);
-        if (!variant.isValid())
-            continue;
+		typename DataValueInfo<TValue>::Value value {DataValueInfo<TValue>::Undefined};
+		auto variant = property.readOnGadget(gadget);
+		if (!variant.isValid())
+			continue;
 
-        if (const auto serializable = SerializationAdapter::obtainSerializable(gadget, metaObject, property, variant);
+		if (const auto serializable = asSerializable(gadget, metaObject, property, variant);
 			serializable) {
 			if constexpr (std::is_same_v<TValue, QCborValue>)
 				value = serializable->toCbor(config);
@@ -62,7 +97,7 @@ void deserialize(const QMetaObject *metaObject, QtJson::SerializableGadget *gadg
 		const auto value = map.value(QString::fromUtf8(property.name()));
 		QVariant variant{property.userType(), nullptr};
 
-        if (const auto serializable = SerializationAdapter::obtainSerializable(gadget, metaObject, property, variant);
+		if (const auto serializable = asSerializable(gadget, metaObject, property, variant);
 			serializable) {
 			if constexpr (std::is_same_v<TValue, QCborValue>)
 				serializable->assignCbor(value, config);
