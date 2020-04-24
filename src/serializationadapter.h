@@ -63,4 +63,29 @@ private:
     static QByteArray serializablePropInfoName(const QMetaProperty &property);
 };
 
+template <typename TType, typename = void>
+class SerializableAdapter;
+
+template <typename TType>
+class SerializableAdapter<TType, std::enable_if_t<std::is_base_of_v<ISerializable, TType>, void>>
+{
+public:
+    QJsonValue toJson(const JsonConfiguration &config = {}) const;
+    void assignJson(const QJsonValue &value, const JsonConfiguration &config = {});
+
+    QCborValue toCbor(const CborConfiguration &config = {}) const;
+    void assignCbor(const QCborValue &value, const CborConfiguration &config = {});
+};
+
+template <typename TType>
+class SerializableAdapter<TType, std::enable_if_t<!std::is_base_of_v<ISerializable, TType>, void>>
+{
+public:
+    QJsonValue toJson(const JsonConfiguration &config = {}) const;
+    void assignJson(const QJsonValue &value, const JsonConfiguration &config = {});
+
+    QCborValue toCbor(const CborConfiguration &config = {}) const;
+    void assignCbor(const QCborValue &value, const CborConfiguration &config = {});
+};
+
 }
