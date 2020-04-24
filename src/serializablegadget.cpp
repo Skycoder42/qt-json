@@ -1,7 +1,7 @@
 #include "serializablegadget.h"
 #include "qtjson_common_p.h"
 #include "qtjson_exception.h"
-#include "serializationadapter.h"
+#include "serializableadapter.h"
 #include <QtCore/QMetaProperty>
 #include <QtCore/QMetaMethod>
 #include <QtCore/QJsonObject>
