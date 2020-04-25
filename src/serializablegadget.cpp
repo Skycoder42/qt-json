@@ -36,7 +36,6 @@ ISerializable *asSerializable(const QtJson::SerializableGadget *gadget,
 		const auto method = mo->method(mIdx);
 		ISerializable *serializable = nullptr;
 		if (method.invokeOnGadget(const_cast<QtJson::SerializableGadget*>(gadget),
-								  Q_ARG(void*, variant.data()),
 								  Q_RETURN_ARG(QtJson::ISerializable*, serializable))) {
 			if (serializable)
 				return serializable;

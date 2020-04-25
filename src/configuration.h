@@ -5,16 +5,16 @@
 namespace QtJson {
 
 enum class ByteArrayMode {
-    Base64,
-    Base64url,
-    Hex
+	Base64,
+	Base64url,
+	Hex
 };
 
 struct CommonConfiguration {
-	bool keepObjectName = true;
+	bool keepObjectName = false;
 	bool enumAsString = true;
-    ByteArrayMode byteArrayMode = ByteArrayMode::Base64;
-    bool dateAsTimeStamp = false;
+	ByteArrayMode byteArrayMode = ByteArrayMode::Base64;
+	bool dateAsTimeStamp = false;
 
 	QVariantMap extraConfig;
 };

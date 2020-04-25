@@ -20,3 +20,5 @@ public:
 };
 
 }
+
+Q_DECLARE_METATYPE(QtJson::ISerializable*)

@@ -11,7 +11,9 @@ HEADERS += \
 	$$PWD/src/qtjson_metamacros.h \
 	$$PWD/src/qtjson_p.h \
 	$$PWD/src/serializableadapter.h \
-	$$PWD/src/serializablegadget.h
+	$$PWD/src/serializablegadget.h \
+	$$PWD/src/serializablelist.h \
+	$$PWD/src/serializablewrapper.h
 
 SOURCES += \
 	$$PWD/src/serializablebytearray.cpp \
@@ -20,7 +22,8 @@ SOURCES += \
 	$$PWD/src/qtjson.cpp \
 	$$PWD/src/qtjson_common.cpp \
 	$$PWD/src/qtjson_exception.cpp \
-	$$PWD/src/serializablegadget.cpp
+	$$PWD/src/serializablegadget.cpp \
+	$$PWD/src/serializablelist.cpp
 
 INCLUDEPATH += $$PWD/src
 
