@@ -1,6 +1,7 @@
 CONFIG += c++17 exceptions
 
 HEADERS += \
+	$$PWD/src/serializablearray.h \
 	$$PWD/src/serializablebytearray.h \
 	$$PWD/src/serializabledatetime.h \
 	$$PWD/src/configuration.h \
@@ -12,7 +13,6 @@ HEADERS += \
 	$$PWD/src/qtjson_p.h \
 	$$PWD/src/serializableadapter.h \
 	$$PWD/src/serializablegadget.h \
-	$$PWD/src/serializablelist.h \
 	$$PWD/src/serializablewrapper.h
 
 SOURCES += \

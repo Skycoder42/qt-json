@@ -3,10 +3,9 @@
 #include "iserializable.h"
 #include "serializableadapter.h"
 
-#include <QtCore/QList>
+#include <QtCore/QtContainerFwd>
 #include <QtCore/QJsonArray>
 #include <QtCore/QCborArray>
-#include <QtCore/QSet>
 
 namespace QtJson {
 
@@ -27,30 +26,30 @@ inline constexpr bool has_reserve_v = has_reserve<T>::value;
 constexpr QCborTag HomogeneousArrayTag = static_cast<QCborTag>(41);
 constexpr QCborTag FiniteSet = static_cast<QCborTag>(258);
 
-template <typename TValue, template <typename> class TList = QList>
-class SerializableList : public TList<TValue>, public ISerializable
+template <typename TValue, template <typename...> class TList = QList>
+class SerializableArray : public TList<TValue>, public ISerializable
 {
 public:
 	using TList<TValue>::TList;
-	SerializableList(const SerializableList &) = default;
-	SerializableList(SerializableList &&) noexcept = default;
-	SerializableList &operator=(const SerializableList &) = default;
-	SerializableList &operator=(SerializableList &&) noexcept = default;
+	SerializableArray(const SerializableArray &) = default;
+	SerializableArray(SerializableArray &&) noexcept = default;
+	SerializableArray &operator=(const SerializableArray &) = default;
+	SerializableArray &operator=(SerializableArray &&) noexcept = default;
 
-	inline SerializableList(const TList<TValue> &other) :
+	inline SerializableArray(const TList<TValue> &other) :
 		TList<TValue>{other}
 	{}
 
-	inline SerializableList(TList<TValue> &&other) noexcept :
+	inline SerializableArray(TList<TValue> &&other) noexcept :
 		TList<TValue>{std::move(other)}
 	{}
 
-	inline SerializableList &operator=(const TList<TValue> &other) {
+	inline SerializableArray &operator=(const TList<TValue> &other) {
 		TList<TValue>::operator=(other);
 		return *this;
 	}
 
-	inline SerializableList &operator=(TList<TValue> &&other) noexcept {
+	inline SerializableArray &operator=(TList<TValue> &&other) noexcept {
 		TList<TValue>::operator=(std::move(other));
 		return *this;
 	}
@@ -58,7 +57,7 @@ public:
 	QJsonValue toJson(const JsonConfiguration &config) const override {
 		QJsonArray array;
 		for (const auto &value : qAsConst(*this))
-			array.append(SerializableAdapter<TValue>::toJson(value, config));
+			array.push_back(SerializableAdapter<TValue>::toJson(value, config));
 		return array;
 	}
 
@@ -73,7 +72,7 @@ public:
 	QCborValue toCbor(const CborConfiguration &config) const override {
 		QCborArray array;
 		for (const auto &value : qAsConst(*this))
-			array.append(SerializableAdapter<TValue>::toCbor(value, config));
+			array.push_back(SerializableAdapter<TValue>::toCbor(value, config));
 		return {HomogeneousArrayTag, array};
 	}
 
@@ -85,14 +84,14 @@ public:
 			this->append(SerializableAdapter<TValue>::fromCbor(element, config));
 	}
 
-	inline static SerializableList fromJson(const QJsonValue &value, const JsonConfiguration &config) {
-		SerializableList data;
+	inline static SerializableArray fromJson(const QJsonValue &value, const JsonConfiguration &config) {
+		SerializableArray data;
 		data.assignJson(value, config);
 		return data;
 	}
 
-	inline static SerializableList fromCbor(const QCborValue &value, const CborConfiguration &config) {
-		SerializableList data;
+	inline static SerializableArray fromCbor(const QCborValue &value, const CborConfiguration &config) {
+		SerializableArray data;
 		data.assignCbor(value, config);
 		return data;
 	}
@@ -100,29 +99,29 @@ public:
 
 
 template <typename TValue>
-class SerializableList<TValue, QSet> : public QSet<TValue>, public ISerializable
+class SerializableArray<TValue, QSet> : public QSet<TValue>, public ISerializable
 {
 public:
 	using QSet<TValue>::TList;
-	SerializableList(const SerializableList &) = default;
-	SerializableList(SerializableList &&) noexcept = default;
-	SerializableList &operator=(const SerializableList &) = default;
-	SerializableList &operator=(SerializableList &&) noexcept = default;
+	SerializableArray(const SerializableArray &) = default;
+	SerializableArray(SerializableArray &&) noexcept = default;
+	SerializableArray &operator=(const SerializableArray &) = default;
+	SerializableArray &operator=(SerializableArray &&) noexcept = default;
 
-	inline SerializableList(const QSet<TValue> &other) :
+	inline SerializableArray(const QSet<TValue> &other) :
 		QSet<TValue>{other}
 	{}
 
-	inline SerializableList(QSet<TValue> &&other) noexcept :
+	inline SerializableArray(QSet<TValue> &&other) noexcept :
 		QSet<TValue>{std::move(other)}
 	{}
 
-	inline SerializableList &operator=(const QSet<TValue> &other) {
+	inline SerializableArray &operator=(const QSet<TValue> &other) {
 		QSet<TValue>::operator=(other);
 		return *this;
 	}
 
-	inline SerializableList &operator=(QSet<TValue> &&other) noexcept {
+	inline SerializableArray &operator=(QSet<TValue> &&other) noexcept {
 		QSet<TValue>::operator=(std::move(other));
 		return *this;
 	}
@@ -153,18 +152,40 @@ public:
 			this->insert(SerializableAdapter<TValue>::fromCbor(element, config));
 	}
 
-	inline static SerializableList fromJson(const QJsonValue &value, const JsonConfiguration &config) {
-		SerializableList data;
+	inline static SerializableArray fromJson(const QJsonValue &value, const JsonConfiguration &config) {
+		SerializableArray data;
 		data.assignJson(value, config);
 		return data;
 	}
 
-	inline static SerializableList fromCbor(const QCborValue &value, const CborConfiguration &config) {
-		SerializableList data;
+	inline static SerializableArray fromCbor(const QCborValue &value, const CborConfiguration &config) {
+		SerializableArray data;
 		data.assignCbor(value, config);
 		return data;
 	}
 };
 
+template <typename T>
+using SerializableList = SerializableArray<T, QList>;
+template <typename T>
+using SerializableVector = SerializableArray<T, QVector>;
+#ifndef QT_NO_LINKED_LIST
+template <typename T>
+using SerializableLinkedList = SerializableArray<T, QLinkedList>;
+#endif
+template <typename T>
+using SerializableStack = SerializableArray<T, QStack>;
+template <typename T>
+using SerializableQueue = SerializableArray<T, QQueue>;
+template <typename T>
+using SerializableSet = SerializableArray<T, QSet>;
+
 }
 
+Q_DECLARE_SEQUENTIAL_CONTAINER_METATYPE(QtJson::SerializableList)
+Q_DECLARE_SEQUENTIAL_CONTAINER_METATYPE(QtJson::SerializableVector)
+#ifndef QT_NO_LINKED_LIST
+Q_DECLARE_SEQUENTIAL_CONTAINER_METATYPE(QtJson::SerializableLinkedList)
+#endif
+Q_DECLARE_SEQUENTIAL_CONTAINER_METATYPE(QtJson::SerializableStack)
+Q_DECLARE_SEQUENTIAL_CONTAINER_METATYPE(QtJson::SerializableQueue)
