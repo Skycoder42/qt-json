@@ -26,7 +26,7 @@ inline constexpr bool has_reserve_v = has_reserve<T>::value;
 constexpr QCborTag HomogeneousArrayTag = static_cast<QCborTag>(41);
 constexpr QCborTag FiniteSet = static_cast<QCborTag>(258);
 
-template <typename TValue, template <typename...> class TList = QList>
+template <typename TValue, template <typename> class TList>
 class SerializableArray : public TList<TValue>, public ISerializable
 {
 public:
@@ -165,20 +165,20 @@ public:
 	}
 };
 
-template <typename T>
-using SerializableList = SerializableArray<T, QList>;
-template <typename T>
-using SerializableVector = SerializableArray<T, QVector>;
+template <typename TValue>
+using SerializableList = SerializableArray<TValue, QList>;
+template <typename TValue>
+using SerializableVector = SerializableArray<TValue, QVector>;
 #ifndef QT_NO_LINKED_LIST
-template <typename T>
-using SerializableLinkedList = SerializableArray<T, QLinkedList>;
+template <typename TValue>
+using SerializableLinkedList = SerializableArray<TValue, QLinkedList>;
 #endif
-template <typename T>
-using SerializableStack = SerializableArray<T, QStack>;
-template <typename T>
-using SerializableQueue = SerializableArray<T, QQueue>;
-template <typename T>
-using SerializableSet = SerializableArray<T, QSet>;
+template <typename TValue>
+using SerializableStack = SerializableArray<TValue, QStack>;
+template <typename TValue>
+using SerializableQueue = SerializableArray<TValue, QQueue>;
+template <typename TValue>
+using SerializableSet = SerializableArray<TValue, QSet>;
 
 }
 

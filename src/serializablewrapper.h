@@ -3,6 +3,7 @@
 #include "serializablebytearray.h"
 #include "serializabledatetime.h"
 #include "serializablearray.h"
+#include "serializabledictionary.h"
 
 namespace QtJson {
 
@@ -51,6 +52,16 @@ struct SerializableWrapper<QStack<T>> {
 template <typename T>
 struct SerializableWrapper<QSet<T>> {
 	using type = SerializableSet<T>;
+};
+
+template <typename TKey, typename TValue>
+struct SerializableWrapper<QHash<TKey, TValue>> {
+	using type = SerializableHash<TKey, TValue>;
+};
+
+template <typename TKey, typename TValue>
+struct SerializableWrapper<QMap<TKey, TValue>> {
+	using type = SerializableMap<TKey, TValue>;
 };
 
 }
