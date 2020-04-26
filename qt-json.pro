@@ -3,12 +3,16 @@ TEMPLATE = subdirs
 SUBDIRS += lib
 
 !cross_compile {
-    SUBDIRS += demo
-    demo.depends += lib
+	SUBDIRS += \
+		demo \
+		tests
+
+	demo.depends += lib
+	tests.depends += lib
 }
 
 OTHER_FILES += \
-    README.md \
-    qt-json.pri \
-    .github/workflows/build.yml \
-    .qmake.conf
+	README.md \
+	qt-json.pri \
+	.github/workflows/build.yml \
+	.qmake.conf
