@@ -7,6 +7,13 @@
 
 namespace QtJson {
 
+namespace __private {
+
+template <typename TType>
+struct DataValueInfo;
+
+}
+
 class QTJSON_EXPORT SerializableGadget : public ISerializable
 {
 	Q_GADGET
@@ -19,6 +26,17 @@ public:
 
 protected:
 	virtual const QMetaObject *getMetaObject() const = 0;
+
+private:
+	static QByteArray serializablePropInfoName(const QMetaProperty &property);
+	ISerializable *asSerializable(const QMetaObject *mo,
+								  const QMetaProperty &property,
+								  QVariant &variant) const;
+
+	template <typename TValue>
+	typename __private::DataValueInfo<TValue>::Map serialize(const typename __private::DataValueInfo<TValue>::Config &config) const;
+	template <typename TValue>
+	void deserialize(const typename __private::DataValueInfo<TValue>::Map &map, const typename __private::DataValueInfo<TValue>::Config &config);
 };
 
 }

@@ -15,6 +15,7 @@ struct CommonConfiguration {
 	bool enumAsString = true;
 	ByteArrayMode byteArrayMode = ByteArrayMode::Base64;
 	bool dateAsTimeStamp = false;
+	bool ignoreStored = false;
 
 	QVariantMap extraConfig;
 };

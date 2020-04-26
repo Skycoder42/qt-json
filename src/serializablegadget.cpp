@@ -9,9 +9,27 @@
 using namespace QtJson;
 using namespace QtJson::__private;
 
-namespace {
+QJsonValue SerializableGadget::toJson(const JsonConfiguration &config) const
+{
+	return serialize<QJsonValue>(config);
+}
 
-QByteArray serializablePropInfoName(const QMetaProperty &property)
+void SerializableGadget::assignJson(const QJsonValue &value, const JsonConfiguration &config)
+{
+	deserialize<QJsonValue>(value.toObject(), config);
+}
+
+QCborValue SerializableGadget::toCbor(const CborConfiguration &config) const
+{
+	return serialize<QCborValue>(config);
+}
+
+void SerializableGadget::assignCbor(const QCborValue &value, const CborConfiguration &config)
+{
+	deserialize<QCborValue>(value.toMap(), config);
+}
+
+QByteArray SerializableGadget::serializablePropInfoName(const QMetaProperty &property)
 {
 	const auto rawName = QByteArrayLiteral(QTJSON_SERIALIZABLE_PROP_KEY_STR) +
 						 property.name() +
@@ -19,10 +37,7 @@ QByteArray serializablePropInfoName(const QMetaProperty &property)
 	return QMetaObject::normalizedSignature(rawName);
 }
 
-ISerializable *asSerializable(const QtJson::SerializableGadget *gadget,
-							  const QMetaObject *mo,
-							  const QMetaProperty &property,
-							  QVariant &variant)
+ISerializable *SerializableGadget::asSerializable(const QMetaObject *mo, const QMetaProperty &property, QVariant &variant) const
 {
 	// assure variant is instance of property type
 	if (variant.userType() != property.userType() &&
@@ -35,7 +50,7 @@ ISerializable *asSerializable(const QtJson::SerializableGadget *gadget,
 	if (mIdx >= 0) {
 		const auto method = mo->method(mIdx);
 		ISerializable *serializable = nullptr;
-		if (method.invokeOnGadget(const_cast<QtJson::SerializableGadget*>(gadget),
+		if (method.invokeOnGadget(const_cast<QtJson::SerializableGadget*>(this),
 								  Q_RETURN_ARG(QtJson::ISerializable*, serializable))) {
 			if (serializable)
 				return serializable;
@@ -45,22 +60,23 @@ ISerializable *asSerializable(const QtJson::SerializableGadget *gadget,
 	return nullptr;
 }
 
-template <typename TValue>
-typename DataValueInfo<TValue>::Map serialize(const QMetaObject *metaObject, const QtJson::SerializableGadget *gadget, const typename DataValueInfo<TValue>::Config &config)
+template<typename TValue>
+typename DataValueInfo<TValue>::Map SerializableGadget::serialize(const typename DataValueInfo<TValue>::Config &config) const
 {
+	const auto metaObject = getMetaObject();
 	const auto offset = findInfo<int>(metaObject, QTJSON_PROPERTY_OFFSET_KEY, 0);
 	typename DataValueInfo<TValue>::Map map;
 	for (auto i = offset; i < metaObject->propertyCount(); ++i) {
 		const auto property = metaObject->property(i);
-		if (!property.isStored())
+		if (!config.ignoreStored && !property.isStored())
 			continue;
 
 		typename DataValueInfo<TValue>::Value value {DataValueInfo<TValue>::Undefined};
-		auto variant = property.readOnGadget(gadget);
+		auto variant = property.readOnGadget(this);
 		if (!variant.isValid())
 			continue;
 
-		if (const auto serializable = asSerializable(gadget, metaObject, property, variant);
+		if (const auto serializable = asSerializable(metaObject, property, variant);
 			serializable) {
 			if constexpr (std::is_same_v<TValue, QCborValue>)
 				value = serializable->toCbor(config);
@@ -83,20 +99,21 @@ typename DataValueInfo<TValue>::Map serialize(const QMetaObject *metaObject, con
 	return map;
 }
 
-template <typename TValue>
-void deserialize(const QMetaObject *metaObject, QtJson::SerializableGadget *gadget, const typename DataValueInfo<TValue>::Map &map, const typename DataValueInfo<TValue>::Config &config)
+template<typename TValue>
+void SerializableGadget::deserialize(const typename DataValueInfo<TValue>::Map &map, const typename DataValueInfo<TValue>::Config &config)
 {
+	const auto metaObject = getMetaObject();
 	const auto offset = findInfo<int>(metaObject, QTJSON_PROPERTY_OFFSET_KEY, 0);
 	// TODO check for strict rules
 	for (auto i = offset; i < metaObject->propertyCount(); ++i) {
 		const auto property = metaObject->property(i);
-		if (!property.isStored())
+		if (!config.ignoreStored && !property.isStored())
 			continue;
 
 		const auto value = map.value(QString::fromUtf8(property.name()));
 		QVariant variant{property.userType(), nullptr};
 
-		if (const auto serializable = asSerializable(gadget, metaObject, property, variant);
+		if (const auto serializable = asSerializable(metaObject, property, variant);
 			serializable) {
 			if constexpr (std::is_same_v<TValue, QCborValue>)
 				serializable->assignCbor(value, config);
@@ -119,29 +136,7 @@ void deserialize(const QMetaObject *metaObject, QtJson::SerializableGadget *gadg
 		} else
 			variant = value.toVariant();
 
-		if (!property.writeOnGadget(gadget, variant))
+		if (!property.writeOnGadget(this, variant))
 			throw InvalidPropertyValueException{property, value};
 	}
-}
-
-}
-
-QJsonValue SerializableGadget::toJson(const JsonConfiguration &config) const
-{
-	return serialize<QJsonValue>(getMetaObject(), this, config);
-}
-
-void SerializableGadget::assignJson(const QJsonValue &value, const JsonConfiguration &config)
-{
-	deserialize<QJsonValue>(getMetaObject(), this, value.toObject(), config);
-}
-
-QCborValue SerializableGadget::toCbor(const CborConfiguration &config) const
-{
-	return serialize<QCborValue>(getMetaObject(), this, config);
-}
-
-void SerializableGadget::assignCbor(const QCborValue &value, const CborConfiguration &config)
-{
-	deserialize<QCborValue>(getMetaObject(), this, value.toMap(), config);
 }
