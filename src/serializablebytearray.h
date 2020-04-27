@@ -9,11 +9,12 @@ namespace QtJson {
 class QTJSON_EXPORT SerializableByteArray : public QByteArray, public ISerializable
 {
 public:
-	using QByteArray::QByteArray;
+    SerializableByteArray() = default;
 	SerializableByteArray(const SerializableByteArray &) = default;
 	SerializableByteArray(SerializableByteArray &&) noexcept = default;
 	SerializableByteArray &operator=(const SerializableByteArray &) = default;
-	SerializableByteArray &operator=(SerializableByteArray &&) noexcept = default;
+    SerializableByteArray &operator=(SerializableByteArray &&) noexcept = default;
+    using QByteArray::QByteArray;
 
 	SerializableByteArray(const QByteArray &other);
 	SerializableByteArray(QByteArray &&other) noexcept;
