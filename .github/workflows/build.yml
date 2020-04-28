@@ -86,4 +86,4 @@ jobs:
       - name: make
         run: ${{steps.qt.outputs.make}}
       - name: make check
-        run: ${{steps.qt.outputs.make}} check
+        run: ${{steps.qt.outputs.make}} ${{steps.qt.outputs.testflags}} check

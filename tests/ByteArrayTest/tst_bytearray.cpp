@@ -22,8 +22,8 @@ void ByteArrayTest::serialize_data()
 
 	QTest::addRow("base64") << QtJson::ByteArrayMode::Base64
 							<< QByteArray{"test"}
-							<< QJsonValue{QStringLiteral("dGVzdAo=")}
-							<< QCborValue{QByteArray{"test"}};
+                            << QJsonValue{QStringLiteral("dGVzdA==")}
+                            << QCborValue{QCborKnownTags::ExpectedBase64, QByteArray{"test"}};
 }
 
 void ByteArrayTest::serialize()
