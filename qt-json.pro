@@ -3,9 +3,9 @@ TEMPLATE = subdirs
 SUBDIRS += lib
 
 !cross_compile {
-	SUBDIRS += \
-		demo \
-		tests
+    SUBDIRS += \
+        tests \
+        demo
 
 	demo.depends += lib
 	tests.depends += lib

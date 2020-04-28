@@ -3,7 +3,7 @@ TEMPLATE = lib
 QT = core
 CONFIG += qdep_build
 
-TARGET = qt-json
+TARGET = $$qtLibraryTarget(qt-json)
 
 include(../qt-json.pri)
 

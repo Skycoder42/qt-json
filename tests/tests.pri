@@ -1,6 +1,6 @@
-win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../../lib/release/ -lqt-json
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../../lib/debug/ -lqt-json
-else: LIBS += -L$$OUT_PWD/../../lib/ -lqt-json
+debug_and_release:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../../lib/release/ -l$$qtLibraryTarget(qt-json)
+else:debug_and_release:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../../lib/debug/ -l$$qtLibraryTarget(qt-json)
+else: LIBS += -L$$OUT_PWD/../../lib/ -l$$qtLibraryTarget(qt-json)
 
 INCLUDEPATH += $$PWD/../src
 DEPENDPATH += $$PWD/../src
