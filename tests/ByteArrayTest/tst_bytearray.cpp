@@ -16,7 +16,7 @@ void ByteArrayTest::setupData() const
     CommonConfiguration c;
     c.byteArrayMode = ByteArrayMode::Base64;
     QTest::addRow("base64") << c
-                            << SerializableByteArray{"test"}
+                            << SerializableByteArray{QByteArray{"test"}}
                             << QJsonValue{QStringLiteral("dGVzdA==")}
                             << QCborValue{QCborKnownTags::ExpectedBase64, QByteArray{"test"}};
 }

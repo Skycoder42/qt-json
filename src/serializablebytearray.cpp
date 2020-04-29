@@ -69,5 +69,5 @@ QCborValue SerializableByteArray::toCbor(const QtJson::CborConfiguration &config
 void SerializableByteArray::assignCbor(const QCborValue &value, const QtJson::CborConfiguration &config)
 {
 	Q_UNUSED(config);
-	operator=(value.toByteArray());
+    operator=((value.isTag() ? value.taggedValue() : value).toByteArray());
 }
