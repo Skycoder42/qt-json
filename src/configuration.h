@@ -20,13 +20,9 @@ struct CommonConfiguration {
 	QVariantMap extraConfig;
 };
 
-struct JsonConfiguration : public CommonConfiguration {
+using JsonConfiguration = CommonConfiguration;
 
-};
-
-struct CborConfiguration : public CommonConfiguration {
-
-};
+using CborConfiguration = CommonConfiguration;
 
 }
 

@@ -1,45 +1,24 @@
 #include <QtTest>
 #include <serializablebytearray.h>
+#include <serializationtest.h>
+using namespace QtJson;
 
-Q_DECLARE_METATYPE(QtJson::ByteArrayMode)
-
-class ByteArrayTest : public QObject
+class ByteArrayTest : public SerializationTest<SerializableByteArray>
 {
-	Q_OBJECT
+    Q_OBJECT
 
-private slots:
-	void serialize_data();
-	void serialize();
-
+protected:
+    void setupData() const;
 };
 
-void ByteArrayTest::serialize_data()
+void ByteArrayTest::setupData() const
 {
-	QTest::addColumn<QtJson::ByteArrayMode>("mode");
-	QTest::addColumn<QByteArray>("data");
-	QTest::addColumn<QJsonValue>("json");
-	QTest::addColumn<QCborValue>("cbor");
-
-	QTest::addRow("base64") << QtJson::ByteArrayMode::Base64
-							<< QByteArray{"test"}
+    CommonConfiguration c;
+    c.byteArrayMode = ByteArrayMode::Base64;
+    QTest::addRow("base64") << c
+                            << SerializableByteArray{"test"}
                             << QJsonValue{QStringLiteral("dGVzdA==")}
                             << QCborValue{QCborKnownTags::ExpectedBase64, QByteArray{"test"}};
-}
-
-void ByteArrayTest::serialize()
-{
-	QFETCH(QtJson::ByteArrayMode, mode);
-	QFETCH(QByteArray, data);
-	QFETCH(QJsonValue, json);
-	QFETCH(QCborValue, cbor);
-
-	QtJson::JsonConfiguration jConf;
-	QtJson::CborConfiguration cConf;
-	jConf.byteArrayMode = mode;
-	cConf.byteArrayMode = mode;
-	QtJson::SerializableByteArray test = data;
-	QCOMPARE(test.toJson(jConf), json);
-	QCOMPARE(test.toCbor(cConf), cbor);
 }
 
 QTEST_APPLESS_MAIN(ByteArrayTest)
