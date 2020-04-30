@@ -54,8 +54,10 @@ void SerializationTest<TSerializable>::testSerialization()
     QFETCH(QJsonValue, json);
     QFETCH(QCborValue, cbor);
 
-    QCOMPARE(data.toJson(config), json);
-    QCOMPARE(data.toCbor(config), cbor);
+    if (!json.isUndefined())
+        QCOMPARE(data.toJson(config), json);
+    if (!cbor.isInvalid())
+        QCOMPARE(data.toCbor(config), cbor);
 }
 
 template <typename TSerializable>
@@ -78,6 +80,8 @@ void SerializationTest<TSerializable>::testDeserialization()
     QFETCH(QJsonValue, json);
     QFETCH(QCborValue, cbor);
 
-    QCOMPARE(TSerializable::fromJson(json, config), data);
-    QCOMPARE(TSerializable::fromCbor(cbor, config), data);
+    if (!json.isUndefined())
+        QCOMPARE(TSerializable::fromJson(json, config), data);
+    if (!cbor.isInvalid())
+        QCOMPARE(TSerializable::fromCbor(cbor, config), data);
 }
