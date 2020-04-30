@@ -1,7 +1,7 @@
 TEMPLATE = lib
 
 QT = core testlib
-CONFIG += staticlib c++17
+CONFIG += staticlib c++17 exceptions
 
 HEADERS += \
     serializationtest.h \

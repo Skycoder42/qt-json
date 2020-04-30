@@ -3,6 +3,7 @@
 #include <QtTest>
 
 #include "iserializable.h"
+#include "qtjson_exception.h"
 
 class SerializationTestBase : public QObject
 {
@@ -33,6 +34,10 @@ private:
     void testSerialization() final;
     void testDeserialization_data() final;
     void testDeserialization() final;
+
+protected:
+    using SerializationTestBase::compare;
+    void compare(const TSerializable &lhs, const TSerializable &rhs, const char *file, int line) const;
 };
 
 
@@ -44,6 +49,7 @@ void SerializationTest<TSerializable>::testSerialization_data()
     QTest::addColumn<TSerializable>("data");
     QTest::addColumn<QJsonValue>("json");
     QTest::addColumn<QCborValue>("cbor");
+    QTest::addColumn<bool>("throws");
 
     setupData();
     setupSerData();
@@ -56,11 +62,23 @@ void SerializationTest<TSerializable>::testSerialization()
     QFETCH(TSerializable, data);
     QFETCH(QJsonValue, json);
     QFETCH(QCborValue, cbor);
+    QFETCH(bool, throws);
 
-    if (!json.isUndefined())
-        compare(data.toJson(config), json, __FILE__, __LINE__);
-    if (!cbor.isInvalid())
-        compare(data.toCbor(config), cbor, __FILE__, __LINE__);
+    try {
+        if (throws) {
+            if (!json.isUndefined())
+                QVERIFY_EXCEPTION_THROWN(data.toJson(config), QtJson::Exception);
+            if (!cbor.isInvalid())
+                QVERIFY_EXCEPTION_THROWN(data.toCbor(config), QtJson::Exception);
+        } else {
+            if (!json.isUndefined())
+                compare(data.toJson(config), json, __FILE__, __LINE__);
+            if (!cbor.isInvalid())
+                compare(data.toCbor(config), cbor, __FILE__, __LINE__);
+        }
+    } catch (std::exception &e) {
+        QFAIL(e.what());
+    }
 }
 
 template <typename TSerializable>
@@ -70,6 +88,7 @@ void SerializationTest<TSerializable>::testDeserialization_data()
     QTest::addColumn<TSerializable>("data");
     QTest::addColumn<QJsonValue>("json");
     QTest::addColumn<QCborValue>("cbor");
+    QTest::addColumn<bool>("throws");
 
     setupData();
     setupDeserData();
@@ -82,9 +101,32 @@ void SerializationTest<TSerializable>::testDeserialization()
     QFETCH(TSerializable, data);
     QFETCH(QJsonValue, json);
     QFETCH(QCborValue, cbor);
+    QFETCH(bool, throws);
 
-    if (!json.isUndefined())
-        QCOMPARE(TSerializable::fromJson(json, config), data);
-    if (!cbor.isInvalid())
-        QCOMPARE(TSerializable::fromCbor(cbor, config), data);
+    try {
+        if (throws) {
+            if (!json.isUndefined())
+                QVERIFY_EXCEPTION_THROWN(TSerializable::fromJson(json, config), QtJson::Exception);
+            if (!cbor.isInvalid())
+                QVERIFY_EXCEPTION_THROWN(TSerializable::fromCbor(cbor, config), QtJson::Exception);
+        } else {
+            if (!json.isUndefined())
+                compare(TSerializable::fromJson(json, config), data, __FILE__, __LINE__);
+            if (!cbor.isInvalid())
+                compare(TSerializable::fromCbor(cbor, config), data, __FILE__, __LINE__);
+        }
+    } catch (std::exception &e) {
+        QFAIL(e.what());
+    }
+}
+
+template<typename TSerializable>
+void SerializationTest<TSerializable>::compare(const TSerializable &lhs, const TSerializable &rhs, const char *file, int line) const
+{
+    const auto lStr = QVariant{lhs}.toString();
+    const auto rStr = QVariant{rhs}.toString();
+    if (!QTest::qCompare<TSerializable, TSerializable>(lhs, rhs, qUtf8Printable(lStr), qUtf8Printable(rStr), file, line)){
+        qCritical().noquote() << "Actual:  " << lStr;
+        qCritical().noquote() << "Expected:" << rStr;
+    }
 }

@@ -21,9 +21,9 @@ void SerializationTestBase::compare(const QJsonValue &lhs, const QJsonValue &rhs
 
 void SerializationTestBase::compare(const QCborValue &lhs, const QCborValue &rhs, const char *file, int line) const
 {
-    const auto lStr = lhs.toDiagnosticNotation(QCborValue::Compact).toUtf8();
-    const auto rStr = rhs.toDiagnosticNotation(QCborValue::Compact).toUtf8();
-    if (!QTest::qCompare(lhs, rhs, lStr.constData(), rStr.constData(), file, line)){
+    const auto lStr = lhs.toDiagnosticNotation(QCborValue::Compact);
+    const auto rStr = rhs.toDiagnosticNotation(QCborValue::Compact);
+    if (!QTest::qCompare(lhs, rhs, qUtf8Printable(lStr), qUtf8Printable(rStr), file, line)){
         qCritical().noquote() << "Actual:  " << lStr;
         qCritical().noquote() << "Expected:" << rStr;
     }

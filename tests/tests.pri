@@ -1,3 +1,5 @@
+CONFIG += c++17 exceptions
+
 !equals(IS_TESTLIB, true) {
     debug_and_release:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../testlib/release/ -ltestlib
     else:debug_and_release:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../testlib/debug/ -ltestlib
