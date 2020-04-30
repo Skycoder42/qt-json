@@ -35,17 +35,17 @@ template <typename TType>
 class SerializableAdapter<TType, std::enable_if_t<!std::is_base_of_v<ISerializable, TType>, void>>
 {
 public:
-	static inline QJsonValue toJson(const TType &value, const JsonConfiguration &) {
+    static inline QJsonValue toJson(const TType &value, const JsonConfiguration & = {}) {
 		return QJsonValue::fromVariant(QVariant::fromValue(value));
 	}
-	static inline TType fromJson(const QJsonValue &value, const JsonConfiguration &) {
+    static inline TType fromJson(const QJsonValue &value, const JsonConfiguration & = {}) {
 		return value.toVariant().template value<TType>();
 	}
 
-	static inline QCborValue toCbor(const TType &value, const CborConfiguration &) {
+    static inline QCborValue toCbor(const TType &value, const CborConfiguration & = {}) {
 		return QCborValue::fromVariant(QVariant::fromValue(value));
 	}
-	static inline TType fromCbor(const QCborValue &value, const CborConfiguration &) {
+    static inline TType fromCbor(const QCborValue &value, const CborConfiguration & = {}) {
 		return value.toVariant().template value<TType>();
 	}
 };

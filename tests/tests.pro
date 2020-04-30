@@ -3,6 +3,7 @@ TEMPLATE = subdirs
 SUBDIRS +=  \
     ByteArrayTest \
     DateTimeTest \
+    SerializableAdapterTest \
     testlib
 
 for(sdir, SUBDIRS): \
