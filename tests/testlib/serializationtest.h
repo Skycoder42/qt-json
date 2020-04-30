@@ -4,8 +4,6 @@
 
 #include "iserializable.h"
 
-Q_DECLARE_METATYPE(QtJson::CommonConfiguration)
-
 class SerializationTestBase : public QObject
 {
     Q_OBJECT
@@ -14,6 +12,11 @@ protected:
     virtual void setupData() const;
     virtual void setupSerData() const;
     virtual void setupDeserData() const;
+
+    void compare(const QJsonValue &lhs, const QJsonValue &rhs, const char *file, int line) const;
+    void compare(const QCborValue &lhs, const QCborValue &rhs, const char *file, int line) const;
+
+    QByteArray stringiy(const QJsonValue &value) const;
 
 private Q_SLOTS:
     virtual void testSerialization_data() = 0;
@@ -55,9 +58,9 @@ void SerializationTest<TSerializable>::testSerialization()
     QFETCH(QCborValue, cbor);
 
     if (!json.isUndefined())
-        QCOMPARE(data.toJson(config), json);
+        compare(data.toJson(config), json, __FILE__, __LINE__);
     if (!cbor.isInvalid())
-        QCOMPARE(data.toCbor(config), cbor);
+        compare(data.toCbor(config), cbor, __FILE__, __LINE__);
 }
 
 template <typename TSerializable>
