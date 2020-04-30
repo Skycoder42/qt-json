@@ -1,8 +1,9 @@
 TEMPLATE = subdirs
 
-SUBDIRS += \
-    testlib \
-    ByteArrayTest
+SUBDIRS +=  \
+    ByteArrayTest \
+    DateTimeTest \
+    testlib
 
 for(sdir, SUBDIRS): \
     !equals(sdir, testlib): \
