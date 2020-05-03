@@ -29,7 +29,7 @@ public:
     }
 };
 
-class SerializableAdapterTest : public QObject
+class AdapterTest : public QObject
 {
     Q_OBJECT
 
@@ -38,7 +38,7 @@ private slots:
     void testWrapSerializableType();
 };
 
-void SerializableAdapterTest::testWrapNormalType()
+void AdapterTest::testWrapNormalType()
 {
     QCOMPARE(SerializableAdapter<int>::toJson(42), QJsonValue{42});
     QCOMPARE(SerializableAdapter<int>::toCbor(42), QCborValue{42});
@@ -46,7 +46,7 @@ void SerializableAdapterTest::testWrapNormalType()
     QCOMPARE(SerializableAdapter<int>::fromCbor(QCborValue{42}), 42);
 }
 
-void SerializableAdapterTest::testWrapSerializableType()
+void AdapterTest::testWrapSerializableType()
 {
     QCOMPARE(SerializableAdapter<TestSerializable>::toJson({4.2}), QJsonValue{4.2});
     QCOMPARE(SerializableAdapter<TestSerializable>::toCbor({4.2}), QCborValue{4.2});
@@ -54,6 +54,6 @@ void SerializableAdapterTest::testWrapSerializableType()
     QCOMPARE(SerializableAdapter<TestSerializable>::fromCbor(QCborValue{4.2}), TestSerializable{4.2});
 }
 
-QTEST_APPLESS_MAIN(SerializableAdapterTest)
+QTEST_APPLESS_MAIN(AdapterTest)
 
-#include "tst_serializableadapter.moc"
+#include "tst_adapter.moc"

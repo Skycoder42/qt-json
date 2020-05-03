@@ -6,6 +6,6 @@ CONFIG -= app_bundle
 
 TEMPLATE = app
 
-SOURCES +=  tst_serializableadapter.cpp
+SOURCES +=  tst_adapter.cpp
 
 include(../tests.pri)
