@@ -9,7 +9,7 @@ class ByteArrayTest : public SerializationTest<SerializableByteArray>
 
 protected:
 	void setupData() const override;
-	void setupDeserData() const override;
+    void setupDeserData() const override;
 
 private:
 	inline ConstSerPtr db(const QByteArray &data) const {
@@ -47,7 +47,7 @@ void ByteArrayTest::setupDeserData() const
 								   << db("test")
 								   << QJsonValue{QJsonValue::Undefined}
 								   << QCborValue{QByteArray{"test"}}
-								   << false;
+                                   << false;
 }
 
 QTEST_APPLESS_MAIN(ByteArrayTest)

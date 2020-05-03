@@ -1,33 +1,8 @@
 #include <QtTest>
 #include <testlib.h>
 #include <serializableadapter.h>
+#include <testserializable.h>
 using namespace QtJson;
-
-class TestSerializable : public ISerializable
-{
-public:
-    double value = 0;
-
-    inline TestSerializable() = default;
-    inline TestSerializable(double value) : value{value} {}
-
-    inline bool operator==(const TestSerializable &other) const {
-        return value == other.value;
-    }
-
-    inline QJsonValue toJson(const JsonConfiguration &) const override {
-        return value;
-    }
-    inline void assignJson(const QJsonValue &value, const JsonConfiguration &) override {
-        this->value = value.toDouble();
-    }
-    inline QCborValue toCbor(const CborConfiguration &) const override {
-        return value;
-    }
-    inline void assignCbor(const QCborValue &value, const CborConfiguration &) override {
-        this->value = value.toDouble();
-    }
-};
 
 class AdapterTest : public QObject
 {

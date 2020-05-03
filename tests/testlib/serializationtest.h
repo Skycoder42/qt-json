@@ -2,6 +2,7 @@
 
 #include <variant>
 #include <optional>
+#include <type_traits>
 #include <QtTest>
 
 #include "iserializable.h"
@@ -22,11 +23,11 @@ protected:
     virtual void setupSerData() const;
     virtual void setupDeserData() const;
 
-    void compare(const QJsonValue &lhs, const QJsonValue &rhs, const char *file, int line) const;
-    void compare(const QCborValue &lhs, const QCborValue &rhs, const char *file, int line) const;
-    virtual void compare(const ConstSerPtr &lhs, const ConstSerPtr &rhs, const char *file, int line) const = 0;
+    void compare(const QJsonValue &actual, const QJsonValue &expected, const char *file, int line) const;
+    void compare(const QCborValue &actual, const QCborValue &expected, const char *file, int line) const;
+    virtual void compare(const ConstSerPtr &actual, const ConstSerPtr &expected, const char *file, int line) const = 0;
 
-    QByteArray stringiy(const QJsonValue &value) const;
+    QByteArray stringify(const QJsonValue &value) const;
 
     virtual SerPtr cloneEmpty(const ConstSerPtr &base) = 0;
 
@@ -48,7 +49,7 @@ template <typename TSerializable>
 class SerializationTest : public SerializationTestBase
 {
 protected:
-    void compare(const ConstSerPtr &lhs, const ConstSerPtr &rhs, const char *file, int line) const override;
+    void compare(const ConstSerPtr &actual, const ConstSerPtr &expected, const char *file, int line) const override;
 
     SerPtr cloneEmpty(const ConstSerPtr &base) override;
 
@@ -67,10 +68,16 @@ public:
     using Variant = std::variant<QSharedPointer<const TSerializables>...>;
 
 protected:
-    void compare(const ConstSerPtr &lhs, const ConstSerPtr &rhs, const char *file, int line) const override;
+    void compare(const ConstSerPtr &actual, const ConstSerPtr &expected, const char *file, int line) const override;
     SerPtr cloneEmpty(const ConstSerPtr &base) override;
 
     inline std::optional<Variant> extractVariant(const ConstSerPtr &data) const;
+
+    template <typename TSerializable, typename... TArgs>
+    ConstSerPtr d(TArgs&& ...data) const {
+        static_assert (std::disjunction_v<std::is_same<TSerializable, TSerializables>...>, "TSerializable must be one of the TSerializables");
+        return QSharedPointer<const TSerializable>::create(std::forward<TArgs>(data)...);
+    }
 
 private:
     template <typename TFirst>
@@ -82,17 +89,15 @@ private:
 
 
 template<typename TSerializable>
-void SerializationTest<TSerializable>::compare(const SerializationTestBase::ConstSerPtr &lhs, const SerializationTestBase::ConstSerPtr &rhs, const char *file, int line) const
+void SerializationTest<TSerializable>::compare(const SerializationTestBase::ConstSerPtr &actual, const SerializationTestBase::ConstSerPtr &expected, const char *file, int line) const
 {
-    QVERIFY(lhs.dynamicCast<const TSerializable>());
-    QVERIFY(rhs.dynamicCast<const TSerializable>());
-    const auto &lhsData = *lhs.staticCast<const TSerializable>();
-    const auto &rhsData = *rhs.staticCast<const TSerializable>();
-    const auto lStr = QVariant{lhsData}.toString();
-    const auto rStr = QVariant{rhsData}.toString();
-    if (!QTest::qCompare(lhsData, rhsData, qUtf8Printable(lStr), qUtf8Printable(rStr), file, line)){
-        qCritical().noquote() << "Actual:  " << lStr;
-        qCritical().noquote() << "Expected:" << rStr;
+    QVERIFY(actual.dynamicCast<const TSerializable>());
+    QVERIFY(expected.dynamicCast<const TSerializable>());
+    const auto &aData = *actual.staticCast<const TSerializable>();
+    const auto &eData = *expected.staticCast<const TSerializable>();
+    if (!QTest::qCompare(aData, eData, "actual", "expected", file, line)){
+        qCritical().noquote() << "Actual:  " << aData;
+        qCritical().noquote() << "Expected:" << eData;
     }
 }
 
@@ -110,24 +115,23 @@ template<typename... TSerializables>
 void SerializationMultiTest<TSerializables...>::compare(const SerializationTestBase::ConstSerPtr &lhs, const SerializationTestBase::ConstSerPtr &rhs, const char *file, int line) const
 {
     using ValVariant = std::variant<TSerializables...>;
-    const auto toValVariant = [](const auto &data) -> ValVariant {
+    const auto toValVar = [](const auto &data) -> ValVariant {
         return *data;
     };
-    const auto toString = [](const auto &data) -> QString {
-        return QVariant::fromValue(data).toString();
-    };
 
-    const auto lhsVar = extractVariant(lhs);
-    QVERIFY(lhsVar);
-    const auto rhsVar = extractVariant(rhs);
-    QVERIFY(rhsVar);
-    const auto lhsData = std::visit(toValVariant, *lhsVar);
-    const auto rhsData = std::visit(toValVariant, *rhsVar);
-    const auto lStr = std::visit(toString, lhsData);
-    const auto rStr = std::visit(toString, rhsData);
-    if (!QTest::qCompare(lhsData, rhsData, qUtf8Printable(lStr), qUtf8Printable(rStr), file, line)){
-        qCritical().noquote() << "Actual:  " << lStr;
-        qCritical().noquote() << "Expected:" << rStr;
+    const auto actualVar = extractVariant(lhs);
+    QVERIFY(actualVar);
+    const auto expectedVar = extractVariant(rhs);
+    QVERIFY(expectedVar);
+    const auto actualData = std::visit(toValVar, *actualVar);
+    const auto expectedData = std::visit(toValVar, *expectedVar);
+    if (!QTest::qCompare(actualData, expectedData, "actual", "expected", file, line)){
+        std::visit([](const auto &data) {
+            qCritical().noquote() << "Actual:  " << data;
+        }, actualData);
+        std::visit([](const auto &data) {
+            qCritical().noquote() << "Expected:" << data;
+        }, expectedData);
     }
 }
 

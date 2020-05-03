@@ -9,7 +9,7 @@ class DateTimeTest : public SerializationTest<SerializableDateTime>
 
 protected:
 	void setupData() const override;
-	void setupSerData() const override;
+    void setupSerData() const override;
 
 private:
 	inline ConstSerPtr dd(const QDateTime &data) const {
@@ -38,7 +38,7 @@ void DateTimeTest::setupData() const
 	const auto localOffset = QDateTime::currentDateTime().offsetFromUtc();
 	const auto offsetStr = timeZoneOffset(localOffset);
 
-	QDateTime dt{{2020, 10, 10}, {17, 24, 30, 123}};
+    QDateTime dt{{2020, 10, 10}, {17, 24, 30, 123}};
 	QTest::addRow("string.local") << c(false)
 								  << dd(dt)
 								  << QJsonValue{QStringLiteral("2020-10-10T17:24:30.123") + offsetStr}
@@ -109,7 +109,7 @@ void DateTimeTest::setupSerData() const
 											 QCborKnownTags::UnixTime_t,
 											 1602350670
 										 }
-									  << false;
+                                      << false;
 }
 
 QTEST_APPLESS_MAIN(DateTimeTest)

@@ -9,27 +9,23 @@ void SerializationTestBase::setupSerData() const {}
 
 void SerializationTestBase::setupDeserData() const {}
 
-void SerializationTestBase::compare(const QJsonValue &lhs, const QJsonValue &rhs, const char *file, int line) const
+void SerializationTestBase::compare(const QJsonValue &actual, const QJsonValue &expected, const char *file, int line) const
 {
-	const auto lStr = stringiy(lhs);
-	const auto rStr = stringiy(rhs);
-	if (!QTest::qCompare(lhs, rhs, lStr.constData(), rStr.constData(), file, line)){
-		qCritical().noquote() << "Actual:  " << lStr;
-		qCritical().noquote() << "Expected:" << rStr;
+    if (!QTest::qCompare(actual, expected, "actual", "expected", file, line)) {
+        qCritical().noquote() << "Actual:  " << stringify(actual);
+        qCritical().noquote() << "Expected:" << stringify(expected);
 	}
 }
 
-void SerializationTestBase::compare(const QCborValue &lhs, const QCborValue &rhs, const char *file, int line) const
+void SerializationTestBase::compare(const QCborValue &actual, const QCborValue &expected, const char *file, int line) const
 {
-	const auto lStr = lhs.toDiagnosticNotation(QCborValue::Compact);
-	const auto rStr = rhs.toDiagnosticNotation(QCborValue::Compact);
-	if (!QTest::qCompare(lhs, rhs, qUtf8Printable(lStr), qUtf8Printable(rStr), file, line)){
-		qCritical().noquote() << "Actual:  " << lStr;
-		qCritical().noquote() << "Expected:" << rStr;
+    if (!QTest::qCompare(actual, expected, "actual", "expected", file, line)){
+        qCritical().noquote() << "Actual:  " << actual.toDiagnosticNotation(QCborValue::Compact);
+        qCritical().noquote() << "Expected:" << expected.toDiagnosticNotation(QCborValue::Compact);
 	}
 }
 
-QByteArray SerializationTestBase::stringiy(const QJsonValue &value) const
+QByteArray SerializationTestBase::stringify(const QJsonValue &value) const
 {
 	switch (value.type()) {
 	case QJsonValue::Array:

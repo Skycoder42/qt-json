@@ -24,7 +24,7 @@ inline constexpr bool has_reserve_v = has_reserve<T>::value;
 
 // TODO move to enum
 constexpr QCborTag HomogeneousArrayTag = static_cast<QCborTag>(41);
-constexpr QCborTag FiniteSet = static_cast<QCborTag>(258);
+constexpr QCborTag FiniteSetTag = static_cast<QCborTag>(258);
 
 template <typename TValue, template <typename> class TList>
 class SerializableArray : public TList<TValue>, public ISerializable
@@ -76,8 +76,9 @@ public:
 		return {HomogeneousArrayTag, array};
 	}
 
-	void assignCbor(const QCborValue &value, const CborConfiguration &config) override {
-		const auto array = value.toArray();
+    void assignCbor(const QCborValue &value, const CborConfiguration &config) override {
+        // TODO global recursive extractor?
+        const auto array = (value.isTag() ? value.taggedValue() : value).toArray();
 		if constexpr (__private::has_reserve_v<TList<TValue>>)
 			this->reserve(array.size());
 		for (const auto &element : array)
@@ -102,7 +103,7 @@ template <typename TValue>
 class SerializableArray<TValue, QSet> : public QSet<TValue>, public ISerializable
 {
 public:
-	using QSet<TValue>::TList;
+    using QSet<TValue>::QSet;
 	SerializableArray(const SerializableArray &) = default;
 	SerializableArray(SerializableArray &&) noexcept = default;
 	SerializableArray &operator=(const SerializableArray &) = default;
@@ -143,11 +144,11 @@ public:
 		QCborArray array;
 		for (const auto &value : qAsConst(*this))
 			array.append(SerializableAdapter<TValue>::toCbor(value, config));
-		return {FiniteSet, array};
+        return {FiniteSetTag, array};
 	}
 
-	void assignCbor(const QCborValue &value, const CborConfiguration &config) override {
-		const auto array = value.toArray();
+    void assignCbor(const QCborValue &value, const CborConfiguration &config) override {
+        const auto array = (value.isTag() ? value.taggedValue() : value).toArray();
 		for (const auto &element : array)
 			this->insert(SerializableAdapter<TValue>::fromCbor(element, config));
 	}
@@ -189,3 +190,4 @@ Q_DECLARE_SEQUENTIAL_CONTAINER_METATYPE(QtJson::SerializableLinkedList)
 #endif
 Q_DECLARE_SEQUENTIAL_CONTAINER_METATYPE(QtJson::SerializableStack)
 Q_DECLARE_SEQUENTIAL_CONTAINER_METATYPE(QtJson::SerializableQueue)
+Q_DECLARE_SEQUENTIAL_CONTAINER_METATYPE(QtJson::SerializableSet)
