@@ -22,8 +22,8 @@ private:
 		return config;
 	}
 
-	inline QString timeZoneOffset(int localOffset) const {
-		if (localOffset == 0)
+    inline QString timeZoneOffset(int localOffset, bool useZ = true) const {
+        if (localOffset == 0 && useZ)
 			return QStringLiteral("Z");
 		else {
 			return QStringLiteral("+%1:%2")
@@ -70,11 +70,11 @@ void DateTimeTest::setupData() const
 
 	dt = {{2020, 10, 10}, {17, 24, 30, 123}, QTimeZone::systemTimeZone()};
 	QTest::addRow("string.timezone") << c(false)
-									 << dd(dt)
-									 << QJsonValue{QStringLiteral("2020-10-10T17:24:30.123") + offsetStr}
+                                     << dd(dt)
+                                     << QJsonValue{QStringLiteral("2020-10-10T17:24:30.123") + timeZoneOffset(localOffset, false)}
 									 << QCborValue{
 											QCborKnownTags::DateTimeString,
-											QStringLiteral("2020-10-10T17:24:30.123") + offsetStr
+                                            QStringLiteral("2020-10-10T17:24:30.123") + timeZoneOffset(localOffset, false)
 										}
 									 << false;
 
