@@ -72,10 +72,7 @@ void DateTimeTest::setupData() const
 	QTest::addRow("string.timezone") << c(false)
                                      << dd(dt)
                                      << QJsonValue{QStringLiteral("2020-10-10T17:24:30.123") + timeZoneOffset(localOffset, false)}
-									 << QCborValue{
-											QCborKnownTags::DateTimeString,
-                                            QStringLiteral("2020-10-10T17:24:30.123") + timeZoneOffset(localOffset, false)
-										}
+                                     << QCborValue{dt}
 									 << false;
 
 	dt = {{2020, 10, 10}, {17, 24, 30}};
