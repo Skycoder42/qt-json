@@ -40,8 +40,8 @@ public:
 
 	QJsonValue toJson(const JsonConfiguration &config) const override {
 		QJsonObject object;
-		for (auto it = this->begin(), end = this->end(); it != end; ++it) {
-			object.insert(QVariant::fromValue(it.key()),
+        for (auto it = this->begin(), end = this->end(); it != end; ++it) {
+            object.insert(QVariant::fromValue(it.key()).toString(),
 						  SerializableAdapter<TValue>::toJson(it.value(), config));
 		}
 		return object;

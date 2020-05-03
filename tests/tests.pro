@@ -5,10 +5,12 @@ SUBDIRS +=  \
     ArrayTest \
     ByteArrayTest \
     DateTimeTest \
+    DictionaryTest \
     testlib
 
 for(sdir, SUBDIRS): \
     !equals(sdir, testlib): \
     $${sdir}.depends += testlib
 
-SerializableArrayTest.depends += SerializableAdapterTest
+ArrayTest.depends += AdapterTest
+DictionaryTest.depends += AdapterTest
