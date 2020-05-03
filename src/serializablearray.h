@@ -54,14 +54,14 @@ public:
 		return *this;
 	}
 
-	QJsonValue toJson(const JsonConfiguration &config) const override {
+	QJsonValue toJson(const CommonConfiguration &config) const override {
 		QJsonArray array;
 		for (const auto &value : qAsConst(*this))
 			array.push_back(SerializableAdapter<TValue>::toJson(value, config));
 		return array;
 	}
 
-	void assignJson(const QJsonValue &value, const JsonConfiguration &config) override {
+	void assignJson(const QJsonValue &value, const CommonConfiguration &config) override {
 		const auto array = value.toArray();
 		if constexpr (__private::has_reserve_v<TList<TValue>>)
 			this->reserve(array.size());
@@ -69,14 +69,14 @@ public:
 			this->append(SerializableAdapter<TValue>::fromJson(element, config));
 	}
 
-	QCborValue toCbor(const CborConfiguration &config) const override {
+	QCborValue toCbor(const CommonConfiguration &config) const override {
 		QCborArray array;
 		for (const auto &value : qAsConst(*this))
 			array.push_back(SerializableAdapter<TValue>::toCbor(value, config));
 		return {HomogeneousArrayTag, array};
 	}
 
-    void assignCbor(const QCborValue &value, const CborConfiguration &config) override {
+    void assignCbor(const QCborValue &value, const CommonConfiguration &config) override {
         // TODO global recursive extractor?
         const auto array = (value.isTag() ? value.taggedValue() : value).toArray();
 		if constexpr (__private::has_reserve_v<TList<TValue>>)
@@ -85,13 +85,13 @@ public:
 			this->append(SerializableAdapter<TValue>::fromCbor(element, config));
 	}
 
-	inline static SerializableArray fromJson(const QJsonValue &value, const JsonConfiguration &config) {
+	inline static SerializableArray fromJson(const QJsonValue &value, const CommonConfiguration &config) {
 		SerializableArray data;
 		data.assignJson(value, config);
 		return data;
 	}
 
-	inline static SerializableArray fromCbor(const QCborValue &value, const CborConfiguration &config) {
+	inline static SerializableArray fromCbor(const QCborValue &value, const CommonConfiguration &config) {
 		SerializableArray data;
 		data.assignCbor(value, config);
 		return data;
@@ -127,39 +127,39 @@ public:
 		return *this;
 	}
 
-	QJsonValue toJson(const JsonConfiguration &config) const override {
+	QJsonValue toJson(const CommonConfiguration &config) const override {
 		QJsonArray array;
 		for (const auto &value : qAsConst(*this))
 			array.append(SerializableAdapter<TValue>::toJson(value, config));
 		return array;
 	}
 
-	void assignJson(const QJsonValue &value, const JsonConfiguration &config) override {
+	void assignJson(const QJsonValue &value, const CommonConfiguration &config) override {
 		const auto array = value.toArray();
 		for (const auto &element : array)
 			this->insert(SerializableAdapter<TValue>::fromJson(element, config));
 	}
 
-	QCborValue toCbor(const CborConfiguration &config) const override {
+	QCborValue toCbor(const CommonConfiguration &config) const override {
 		QCborArray array;
 		for (const auto &value : qAsConst(*this))
 			array.append(SerializableAdapter<TValue>::toCbor(value, config));
         return {FiniteSetTag, array};
 	}
 
-    void assignCbor(const QCborValue &value, const CborConfiguration &config) override {
+    void assignCbor(const QCborValue &value, const CommonConfiguration &config) override {
         const auto array = (value.isTag() ? value.taggedValue() : value).toArray();
 		for (const auto &element : array)
 			this->insert(SerializableAdapter<TValue>::fromCbor(element, config));
 	}
 
-	inline static SerializableArray fromJson(const QJsonValue &value, const JsonConfiguration &config) {
+	inline static SerializableArray fromJson(const QJsonValue &value, const CommonConfiguration &config) {
 		SerializableArray data;
 		data.assignJson(value, config);
 		return data;
 	}
 
-	inline static SerializableArray fromCbor(const QCborValue &value, const CborConfiguration &config) {
+	inline static SerializableArray fromCbor(const QCborValue &value, const CommonConfiguration &config) {
 		SerializableArray data;
 		data.assignCbor(value, config);
 		return data;

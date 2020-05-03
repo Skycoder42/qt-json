@@ -21,7 +21,7 @@ SerializableDateTime &SerializableDateTime::operator=(QDateTime &&other) noexcep
 	return *this;
 }
 
-QJsonValue SerializableDateTime::toJson(const QtJson::JsonConfiguration &config) const
+QJsonValue SerializableDateTime::toJson(const QtJson::CommonConfiguration &config) const
 {
 	if (config.dateAsTimeStamp)
 		return toUTC().toSecsSinceEpoch();
@@ -33,7 +33,7 @@ QJsonValue SerializableDateTime::toJson(const QtJson::JsonConfiguration &config)
 	}
 }
 
-void SerializableDateTime::assignJson(const QJsonValue &value, const QtJson::JsonConfiguration &config)
+void SerializableDateTime::assignJson(const QJsonValue &value, const QtJson::CommonConfiguration &config)
 {
 	Q_UNUSED(config);
 	if (value.isDouble())
@@ -42,7 +42,7 @@ void SerializableDateTime::assignJson(const QJsonValue &value, const QtJson::Jso
 		operator=(fromString(value.toString(), Qt::ISODateWithMs));
 }
 
-QCborValue SerializableDateTime::toCbor(const QtJson::CborConfiguration &config) const
+QCborValue SerializableDateTime::toCbor(const QtJson::CommonConfiguration &config) const
 {
 	if (config.dateAsTimeStamp)
 		return QCborValue{QCborKnownTags::UnixTime_t, toUTC().toSecsSinceEpoch()};
@@ -54,7 +54,7 @@ QCborValue SerializableDateTime::toCbor(const QtJson::CborConfiguration &config)
 	}
 }
 
-void SerializableDateTime::assignCbor(const QCborValue &value, const QtJson::CborConfiguration &config)
+void SerializableDateTime::assignCbor(const QCborValue &value, const QtJson::CommonConfiguration &config)
 {
 	Q_UNUSED(config);
 	operator=(value.toDateTime());

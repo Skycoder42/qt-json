@@ -9,22 +9,22 @@
 using namespace QtJson;
 using namespace QtJson::__private;
 
-QJsonValue SerializableGadget::toJson(const JsonConfiguration &config) const
+QJsonValue SerializableGadget::toJson(const CommonConfiguration &config) const
 {
 	return serialize<QJsonValue>(config);
 }
 
-void SerializableGadget::assignJson(const QJsonValue &value, const JsonConfiguration &config)
+void SerializableGadget::assignJson(const QJsonValue &value, const CommonConfiguration &config)
 {
 	deserialize<QJsonValue>(value.toObject(), config);
 }
 
-QCborValue SerializableGadget::toCbor(const CborConfiguration &config) const
+QCborValue SerializableGadget::toCbor(const CommonConfiguration &config) const
 {
 	return serialize<QCborValue>(config);
 }
 
-void SerializableGadget::assignCbor(const QCborValue &value, const CborConfiguration &config)
+void SerializableGadget::assignCbor(const QCborValue &value, const CommonConfiguration &config)
 {
 	deserialize<QCborValue>(value.toMap(), config);
 }

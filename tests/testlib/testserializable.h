@@ -12,10 +12,10 @@ public:
 
     bool operator==(const TestSerializable &other) const;
 
-    QJsonValue toJson(const QtJson::JsonConfiguration &) const override;
-    void assignJson(const QJsonValue &value, const QtJson::JsonConfiguration &) override;
-    QCborValue toCbor(const QtJson::CborConfiguration &) const override;
-    void assignCbor(const QCborValue &value, const QtJson::CborConfiguration &) override;
+    QJsonValue toJson(const QtJson::CommonConfiguration &) const override;
+    void assignJson(const QJsonValue &value, const QtJson::CommonConfiguration &) override;
+    QCborValue toCbor(const QtJson::CommonConfiguration &) const override;
+    void assignCbor(const QCborValue &value, const QtJson::CommonConfiguration &) override;
 };
 
 QDebug operator<<(QDebug debug, const TestSerializable &value);

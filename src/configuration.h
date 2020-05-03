@@ -20,10 +20,6 @@ struct CommonConfiguration {
 	QVariantMap extraConfig;
 };
 
-using JsonConfiguration = CommonConfiguration;
-
-using CborConfiguration = CommonConfiguration;
-
 }
 
 Q_DECLARE_METATYPE(QtJson::CommonConfiguration)

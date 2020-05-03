@@ -12,22 +12,22 @@ bool TestSerializable::operator==(const TestSerializable &other) const
     return value == other.value;
 }
 
-QJsonValue TestSerializable::toJson(const JsonConfiguration &) const
+QJsonValue TestSerializable::toJson(const CommonConfiguration &) const
 {
     return value;
 }
 
-void TestSerializable::assignJson(const QJsonValue &value, const JsonConfiguration &)
+void TestSerializable::assignJson(const QJsonValue &value, const CommonConfiguration &)
 {
     this->value = value.toDouble();
 }
 
-QCborValue TestSerializable::toCbor(const CborConfiguration &) const
+QCborValue TestSerializable::toCbor(const CommonConfiguration &) const
 {
     return value;
 }
 
-void TestSerializable::assignCbor(const QCborValue &value, const CborConfiguration &)
+void TestSerializable::assignCbor(const QCborValue &value, const CommonConfiguration &)
 {
     this->value = value.toDouble();
 }

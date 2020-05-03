@@ -19,7 +19,7 @@ struct DataValueInfo<QJsonValue> {
     using Value = QJsonValue;
     using Map = QJsonObject;
     using List = QJsonArray;
-    using Config = JsonConfiguration;
+    using Config = CommonConfiguration;
 
     static constexpr auto Undefined = QJsonValue::Undefined;
     static constexpr auto Null = QJsonValue::Null;
@@ -30,7 +30,7 @@ struct DataValueInfo<QCborValue> {
     using Value = QCborValue;
     using Map = QCborMap;
     using List = QCborArray;
-    using Config = CborConfiguration;
+    using Config = CommonConfiguration;
 
     static constexpr auto Undefined = QCborValue::Undefined;
     static constexpr auto Null = QCborValue::Null;

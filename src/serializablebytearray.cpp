@@ -21,7 +21,7 @@ SerializableByteArray &SerializableByteArray::operator=(QByteArray &&other) noex
 	return *this;
 }
 
-QJsonValue SerializableByteArray::toJson(const QtJson::JsonConfiguration &config) const
+QJsonValue SerializableByteArray::toJson(const QtJson::CommonConfiguration &config) const
 {
 	switch (config.byteArrayMode) {
 	case ByteArrayMode::Base64:
@@ -35,7 +35,7 @@ QJsonValue SerializableByteArray::toJson(const QtJson::JsonConfiguration &config
 	}
 }
 
-void SerializableByteArray::assignJson(const QJsonValue &value, const QtJson::JsonConfiguration &config)
+void SerializableByteArray::assignJson(const QJsonValue &value, const QtJson::CommonConfiguration &config)
 {
 	switch (config.byteArrayMode) {
 	case ByteArrayMode::Base64:
@@ -52,7 +52,7 @@ void SerializableByteArray::assignJson(const QJsonValue &value, const QtJson::Js
 	}
 }
 
-QCborValue SerializableByteArray::toCbor(const QtJson::CborConfiguration &config) const
+QCborValue SerializableByteArray::toCbor(const QtJson::CommonConfiguration &config) const
 {
 	switch (config.byteArrayMode) {
 	case ByteArrayMode::Base64:
@@ -66,7 +66,7 @@ QCborValue SerializableByteArray::toCbor(const QtJson::CborConfiguration &config
 	}
 }
 
-void SerializableByteArray::assignCbor(const QCborValue &value, const QtJson::CborConfiguration &config)
+void SerializableByteArray::assignCbor(const QCborValue &value, const QtJson::CommonConfiguration &config)
 {
 	Q_UNUSED(config);
     operator=((value.isTag() ? value.taggedValue() : value).toByteArray());

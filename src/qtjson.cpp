@@ -1,5 +1,4 @@
 #include "qtjson.h"
-#include "qtjson_p.h"
 #include "qtjson_common_p.h"
 #include <QtCore/QSet>
 #include <QtCore/QMetaProperty>
@@ -151,12 +150,12 @@ typename DataValueInfo<TType>::Value serialize(const QVariant &value, const type
 
 }
 
-QJsonValue QtJson::stringify(const QVariant &value, const JsonConfiguration &configuration)
+QJsonValue QtJson::stringify(const QVariant &value, const CommonConfiguration &configuration)
 {
 	return serialize<QJsonValue>(value, configuration);
 }
 
-QCborValue QtJson::binarify(const QVariant &value, const CborConfiguration &configuration)
+QCborValue QtJson::binarify(const QVariant &value, const CommonConfiguration &configuration)
 {
 	return serialize<QCborValue>(value, configuration);
 }
