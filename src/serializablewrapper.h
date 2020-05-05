@@ -9,6 +9,25 @@
 
 namespace QtJson {
 
+template <typename TType, typename = void>
+struct SerializableCast;
+
+template <typename TType>
+struct SerializableCast<TType, std::enable_if_t<!std::is_base_of_v<ISerializable, TType>, void>> {
+	static inline constexpr ISerializable *cast(TType *) {
+		return nullptr;
+	}
+};
+
+template <typename TType>
+struct SerializableCast<TType, std::enable_if_t<std::is_base_of_v<ISerializable, TType>, void>> {
+	static inline constexpr ISerializable *cast(TType *ptr) {
+		return static_cast<ISerializable*>(ptr);
+	}
+};
+
+
+
 template <typename TType>
 struct SerializableWrapper {
 	using type = TType;
@@ -68,12 +87,12 @@ struct SerializableWrapper<QMap<TKey, TValue>> {
 
 template <typename T>
 struct SerializableWrapper<std::optional<T>> {
-    using type = SerializableOptional<T>;
+	using type = SerializableOptional<T>;
 };
 
 template <>
 struct SerializableWrapper<QVersionNumber> {
-    using type = SerializableVersionNumber;
+	using type = SerializableVersionNumber;
 };
 
 }

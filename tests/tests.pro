@@ -6,6 +6,7 @@ SUBDIRS +=  \
     ByteArrayTest \
     DateTimeTest \
     DictionaryTest \
+    GadgetTest \
     testlib
 
 for(sdir, SUBDIRS): \
