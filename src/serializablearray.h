@@ -2,6 +2,8 @@
 
 #include "iserializable.h"
 #include "serializableadapter.h"
+#include "qtjson_exception.h"
+#include "qtjson_common_p.h"
 
 #include <QtCore/QtContainerFwd>
 #include <QtCore/QJsonArray>
@@ -62,6 +64,8 @@ public:
 	}
 
 	void assignJson(const QJsonValue &value, const CommonConfiguration &config) override {
+		if (!value.isArray())
+			throw InvalidValueTypeException{value.type(), QJsonValue::Array};
 		const auto array = value.toArray();
 		if constexpr (__private::has_reserve_v<TList<TValue>>)
 			this->reserve(array.size());
@@ -76,9 +80,13 @@ public:
 		return {HomogeneousArrayTag, array};
 	}
 
-    void assignCbor(const QCborValue &value, const CommonConfiguration &config) override {
-        // TODO global recursive extractor?
-        const auto array = (value.isTag() ? value.taggedValue() : value).toArray();
+	void assignCbor(const QCborValue &value, const CommonConfiguration &config) override {
+		QCborTag tag = static_cast<QCborTag>(-1);
+		const auto xValue = __private::extract(value, &tag);
+		__private::verifyTag(tag, true, HomogeneousArrayTag); // TODO config
+		if (!xValue.isArray())
+			throw InvalidValueTypeException{xValue.type(), QCborValue::Array};
+		const auto array = xValue.toArray();
 		if constexpr (__private::has_reserve_v<TList<TValue>>)
 			this->reserve(array.size());
 		for (const auto &element : array)
@@ -103,7 +111,7 @@ template <typename TValue>
 class SerializableArray<TValue, QSet> : public QSet<TValue>, public ISerializable
 {
 public:
-    using QSet<TValue>::QSet;
+	using QSet<TValue>::QSet;
 	SerializableArray(const SerializableArray &) = default;
 	SerializableArray(SerializableArray &&) noexcept = default;
 	SerializableArray &operator=(const SerializableArray &) = default;
@@ -135,7 +143,9 @@ public:
 	}
 
 	void assignJson(const QJsonValue &value, const CommonConfiguration &config) override {
-        const auto array = value.toArray();  // TODO verify type EVERYWHERE
+		if (!value.isArray())
+			throw InvalidValueTypeException{value.type(), QJsonValue::Array};
+		const auto array = value.toArray();
 		for (const auto &element : array)
 			this->insert(SerializableAdapter<TValue>::fromJson(element, config));
 	}
@@ -144,12 +154,16 @@ public:
 		QCborArray array;
 		for (const auto &value : qAsConst(*this))
 			array.append(SerializableAdapter<TValue>::toCbor(value, config));
-        return {FiniteSetTag, array};
+		return {FiniteSetTag, array};
 	}
 
-    void assignCbor(const QCborValue &value, const CommonConfiguration &config) override {
-        const auto array = (value.isTag() ? value.taggedValue() : value).toArray();
-		for (const auto &element : array)
+	void assignCbor(const QCborValue &value, const CommonConfiguration &config) override {
+		QCborTag tag = static_cast<QCborTag>(-1);
+		const auto xValue = __private::extract(value, &tag);
+		__private::verifyTag(tag, true, FiniteSetTag); // TODO config
+		if (!xValue.isArray())
+			throw InvalidValueTypeException{xValue.type(), QCborValue::Array};
+		for (const auto &element : xValue.toArray())
 			this->insert(SerializableAdapter<TValue>::fromCbor(element, config));
 	}
 

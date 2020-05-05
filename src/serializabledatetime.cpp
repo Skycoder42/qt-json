@@ -1,4 +1,5 @@
 #include "serializabledatetime.h"
+#include "qtjson_exception.h"
 using namespace QtJson;
 
 SerializableDateTime::SerializableDateTime(const QDateTime &other) :
@@ -38,8 +39,10 @@ void SerializableDateTime::assignJson(const QJsonValue &value, const QtJson::Com
 	Q_UNUSED(config);
 	if (value.isDouble())
 		operator=(fromSecsSinceEpoch(value.toInt()));
-	else
+	else if (value.isString())
 		operator=(fromString(value.toString(), Qt::ISODateWithMs));
+	else
+		throw InvalidValueTypeException{value.type(), QJsonValue::Double, QJsonValue::String};
 }
 
 QCborValue SerializableDateTime::toCbor(const QtJson::CommonConfiguration &config) const
@@ -57,6 +60,7 @@ QCborValue SerializableDateTime::toCbor(const QtJson::CommonConfiguration &confi
 void SerializableDateTime::assignCbor(const QCborValue &value, const QtJson::CommonConfiguration &config)
 {
 	Q_UNUSED(config);
+	// TODO properly handle extraction
 	operator=(value.toDateTime());
 }
 

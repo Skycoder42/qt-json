@@ -27,37 +27,86 @@ namespace QtJson {
 class QTJSON_EXPORT Exception : public ExceptionBase
 {
 public:
-    char const* what() const noexcept final;
+	char const* what() const noexcept final;
 
-    virtual void raise() const;
-    virtual ExceptionBase *clone() const;
+	virtual void raise() const;
+	virtual ExceptionBase *clone() const;
 
 protected:
-    Exception(QByteArray what);
+	Exception(QByteArray what);
 
 private:
-    QByteArray _what;
+	QByteArray _what;
+};
+
+class QTJSON_EXPORT InvalidValueTypeException : public Exception
+{
+public:
+	InvalidValueTypeException(QJsonValue::Type actual, const QList<QJsonValue::Type> &expected = {});
+	template <typename... TArgs>
+	inline InvalidValueTypeException(QJsonValue::Type actual, TArgs&&... args) :
+		InvalidValueTypeException{actual, QList<QJsonValue::Type>{std::forward<TArgs>(args)...}}
+	{}
+	InvalidValueTypeException(QCborValue::Type actual, const QList<QCborValue::Type> &expected = {});
+	template <typename... TArgs>
+	inline InvalidValueTypeException(QCborValue::Type actual, TArgs&&... args) :
+		InvalidValueTypeException{actual, QList<QCborValue::Type>{std::forward<TArgs>(args)...}}
+	{}
+
+	void raise() const override;
+	ExceptionBase *clone() const override;
+
+private:
+	static QByteArray typeName(QJsonValue::Type type);
+	static QByteArray typeName(QCborValue::Type type);
+
+	template <typename T>
+	static inline QByteArray join(QList<T> values) {
+		QVector<QByteArray> res;
+		res.resize(values.size());
+		std::transform(values.begin(), values.end(), res.begin(),
+					   [](T t) { return typeName(t); });
+		return res.toList().join(", ");
+	}
+};
+
+class QTJSON_EXPORT InvalidValueTagException : public Exception
+{
+public:
+	InvalidValueTagException(QCborTag actual, const QList<QCborTag> &expected);
+
+	void raise() const override;
+	ExceptionBase *clone() const override;
+
+private:
+	static inline QByteArray join(QList<QCborTag> values) {
+		QVector<QByteArray> res;
+		res.resize(values.size());
+		std::transform(values.begin(), values.end(), res.begin(),
+					   [](QCborTag tag) { return QByteArray::number(static_cast<std::underlying_type_t<QCborTag>>(tag)); });
+		return res.toList().join(", ");
+	}
 };
 
 class QTJSON_EXPORT InvalidPropertyValueException : public Exception
 {
 public:
-    InvalidPropertyValueException(const QMetaProperty &property, const QVariant &value);
-    InvalidPropertyValueException(const QMetaProperty &property, const QJsonValue &value);
-    InvalidPropertyValueException(const QMetaProperty &property, const QCborValue &value);
+	InvalidPropertyValueException(const QMetaProperty &property, const QVariant &value);
+	InvalidPropertyValueException(const QMetaProperty &property, const QJsonValue &value);
+	InvalidPropertyValueException(const QMetaProperty &property, const QCborValue &value);
 
-    void raise() const override;
-    ExceptionBase *clone() const override;
+	void raise() const override;
+	ExceptionBase *clone() const override;
 };
 
 class QTJSON_EXPORT ValidationFailureException : public Exception
 {
 public:
-    explicit ValidationFailureException(const QMetaProperty &property);
-    explicit ValidationFailureException(const QMetaObject *metaObject, const QStringList &extra);
+	explicit ValidationFailureException(const QMetaProperty &property);
+	explicit ValidationFailureException(const QMetaObject *metaObject, const QStringList &extra);
 
-    void raise() const override;
-    ExceptionBase *clone() const override;
+	void raise() const override;
+	ExceptionBase *clone() const override;
 };
 
 }
