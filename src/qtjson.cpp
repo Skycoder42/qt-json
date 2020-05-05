@@ -17,10 +17,10 @@ using namespace QtJson::__private;
 namespace {
 
 template <typename TType>
-typename DataValueInfo<TType>::Value serialize(const QVariant &value, const typename DataValueInfo<TType>::Config &configuration);
+typename DataValueInfo<TType>::Value serialize(const QVariant &value, const CommonConfiguration &configuration);
 
 template <typename TType>
-typename DataValueInfo<TType>::Map mapGadget(const QMetaObject *mo, const void *gadget, const typename DataValueInfo<TType>::Config &configuration)
+typename DataValueInfo<TType>::Map mapGadget(const QMetaObject *mo, const void *gadget, const CommonConfiguration &configuration)
 {
 	typename DataValueInfo<TType>::Map map;
 	for (auto i = 0; i < mo->propertyCount(); ++i) {
@@ -34,7 +34,7 @@ typename DataValueInfo<TType>::Map mapGadget(const QMetaObject *mo, const void *
 }
 
 template <typename TType>
-typename DataValueInfo<TType>::Map mapObject(QObject *object, const typename DataValueInfo<TType>::Config &configuration)
+typename DataValueInfo<TType>::Map mapObject(QObject *object, const CommonConfiguration &configuration)
 {
 	typename DataValueInfo<TType>::Map map;
 	const auto mo = object->metaObject();
@@ -55,7 +55,7 @@ const QSet<int> MetaExceptions {
 };
 
 template <typename TType>
-typename DataValueInfo<TType>::Value serialize(const QVariant &value, const typename DataValueInfo<TType>::Config &configuration)
+typename DataValueInfo<TType>::Value serialize(const QVariant &value, const CommonConfiguration &configuration)
 {
 	if (!value.isValid())
 		return DataValueInfo<TType>::Undefined;

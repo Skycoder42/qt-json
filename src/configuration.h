@@ -10,17 +10,29 @@ enum class ByteArrayMode {
 	Hex
 };
 
-struct CommonConfiguration {
-	bool keepObjectName = false;
-	bool enumAsString = true;
-	ByteArrayMode byteArrayMode = ByteArrayMode::Base64;
-	bool dateAsTimeStamp = false;
-	bool ignoreStored = false;
+enum class ValidationFlag {
+    None = 0x00, // Do not perform extra validation, only make sure types are valid and compatible
+    NoExtra = 0x01, // Make sure the json/cbor does not contain any properties that are not in the type to deserialize it to
+    NoMissing = 0x02, // Make sure all properties of the type have a value in the json/cbor data
 
+    Full = (NoExtra | NoMissing), // Validate properties are exactly the same as declared
+};
+Q_DECLARE_FLAGS(ValidationFlags, ValidationFlag)
+
+struct CommonConfiguration {
+    bool ignoreStored = false;
+	ByteArrayMode byteArrayMode = ByteArrayMode::Base64;
+    bool dateAsTimeStamp = false;
+    bool enumAsString = true;
+    ValidationFlags validation = ValidationFlag::None;
+
+    bool keepObjectName = false;  // TODO remove
 	QVariantMap extraConfig;
 };
 
 }
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(QtJson::ValidationFlags)
 
 Q_DECLARE_METATYPE(QtJson::CommonConfiguration)
 Q_DECLARE_TYPEINFO(QtJson::CommonConfiguration, Q_MOVABLE_TYPE);

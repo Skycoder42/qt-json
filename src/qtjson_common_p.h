@@ -7,7 +7,9 @@
 #include <QtCore/QMetaClassInfo>
 #include <QtCore/QVariant>
 #include <QtCore/QJsonValue>
+#include <QtCore/QJsonObject>
 #include <QtCore/QCborValue>
+#include <QtCore/QCborMap>
 
 namespace QtJson::__private {
 
@@ -19,10 +21,13 @@ struct DataValueInfo<QJsonValue> {
     using Value = QJsonValue;
     using Map = QJsonObject;
     using List = QJsonArray;
-    using Config = CommonConfiguration;
 
     static constexpr auto Undefined = QJsonValue::Undefined;
     static constexpr auto Null = QJsonValue::Null;
+
+    inline static QStringList keys(const Map &map) {
+        return map.keys();
+    }
 };
 
 template <>
@@ -30,10 +35,17 @@ struct DataValueInfo<QCborValue> {
     using Value = QCborValue;
     using Map = QCborMap;
     using List = QCborArray;
-    using Config = CommonConfiguration;
 
     static constexpr auto Undefined = QCborValue::Undefined;
     static constexpr auto Null = QCborValue::Null;
+
+    inline static QStringList keys(const Map &map) {
+        QStringList keys;
+        keys.reserve(static_cast<int>(map.size()));
+        for (const auto &entry : map)
+            keys.append(entry.first.toString());
+        return keys;
+    }
 };
 
 QTJSON_EXPORT QVariant findInfo(const QMetaObject *metaObject, const char *key, const QVariant &defaultValue = {});

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "configuration.h"
+
 #include <optional>
 
 #include <QtCore/QtGlobal>
@@ -46,8 +48,16 @@ public:
 
     void raise() const override;
     ExceptionBase *clone() const override;
+};
 
-private:
+class QTJSON_EXPORT ValidationFailureException : public Exception
+{
+public:
+    explicit ValidationFailureException(const QMetaProperty &property);
+    explicit ValidationFailureException(const QMetaObject *metaObject, const QStringList &extra);
+
+    void raise() const override;
+    ExceptionBase *clone() const override;
 };
 
 }

@@ -31,14 +31,13 @@ protected:
 
 private:
 	static QByteArray serializablePropInfoName(const QMetaProperty &property);
-	ISerializable *asSerializable(const QMetaObject *mo,
-								  const QMetaProperty &property,
-								  QVariant &variant) const;
+    ISerializable *asSerializable(const QMetaObject *mo,
+                                  const QMetaProperty &property) const;
 
 	template <typename TValue>
-	typename __private::DataValueInfo<TValue>::Map serialize(const typename __private::DataValueInfo<TValue>::Config &config) const;
+    typename __private::DataValueInfo<TValue>::Map serialize(const CommonConfiguration &config) const;
 	template <typename TValue>
-	void deserialize(const typename __private::DataValueInfo<TValue>::Map &map, const typename __private::DataValueInfo<TValue>::Config &config);
+    void deserialize(const typename __private::DataValueInfo<TValue>::Map &map, const CommonConfiguration &config);
 };
 
 }
@@ -88,4 +87,3 @@ private:
     private: \
         Q_PROPERTY(__VA_ARGS__ name MEMBER name STORED true) \
         QTJSON_SERIALIZABLE_PROP(name, name, typename SerializableWrapper<__VA_ARGS__>::type)
-

@@ -54,7 +54,7 @@ InvalidPropertyValueException::InvalidPropertyValueException(const QMetaProperty
     Exception{
         QByteArrayLiteral("Unabled to set property ") +
         property.name() +
-        " off " +
+        " of " +
         property.enclosingMetaObject()->className() +
         ": Variant of type " +
         QByteArray::number(value.type()) +
@@ -75,4 +75,37 @@ void InvalidPropertyValueException::raise() const
 ExceptionBase *InvalidPropertyValueException::clone() const
 {
     return new InvalidPropertyValueException{*this};
+}
+
+
+
+ValidationFailureException::ValidationFailureException(const QMetaProperty &property) :
+    Exception{
+        QByteArrayLiteral("Property ") +
+        property.name() +
+        " of " +
+        property.enclosingMetaObject()->className() +
+        " is missing in given JSON/CBOR map"
+    }
+{}
+
+ValidationFailureException::ValidationFailureException(const QMetaObject *metaObject, const QStringList &extra) :
+    Exception {
+        QByteArrayLiteral("Found ") +
+        QByteArray::number(extra.size()) +
+        " additional values in given JSON/CBOR, but they are not declared for " +
+        metaObject->className() +
+        " - the keys of these values are: " +
+        extra.join(QStringLiteral(", ")).toUtf8()
+    }
+{}
+
+void ValidationFailureException::raise() const
+{
+    throw *this;
+}
+
+QtJson::ExceptionBase *ValidationFailureException::clone() const
+{
+    return new ValidationFailureException{*this};
 }
