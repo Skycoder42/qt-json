@@ -2,7 +2,7 @@
 
 #include "iserializable.h"
 
-#include <QByteArray>
+#include <QtCore/QByteArray>
 
 namespace QtJson {
 

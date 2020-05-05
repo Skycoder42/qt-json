@@ -135,7 +135,7 @@ public:
 	}
 
 	void assignJson(const QJsonValue &value, const CommonConfiguration &config) override {
-		const auto array = value.toArray();
+        const auto array = value.toArray();  // TODO verify type EVERYWHERE
 		for (const auto &element : array)
 			this->insert(SerializableAdapter<TValue>::fromJson(element, config));
 	}

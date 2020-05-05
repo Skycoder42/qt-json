@@ -12,6 +12,8 @@ HEADERS += \
 	$$PWD/src/serializableadapter.h \
 	$$PWD/src/serializabledictionary.h \
 	$$PWD/src/serializablegadget.h \
+	$$PWD/src/serializableoptional.h \
+	$$PWD/src/serializableversionnumber.h \
 	$$PWD/src/serializablewrapper.h
 
 SOURCES += \
@@ -21,9 +23,8 @@ SOURCES += \
 	$$PWD/src/qtjson.cpp \
 	$$PWD/src/qtjson_common.cpp \
 	$$PWD/src/qtjson_exception.cpp \
-	$$PWD/src/serializabledictionary.cpp \
 	$$PWD/src/serializablegadget.cpp \
-	$$PWD/src/serializablelist.cpp
+	$$PWD/src/serializableversionnumber.cpp
 
 INCLUDEPATH += $$PWD/src
 

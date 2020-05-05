@@ -4,6 +4,8 @@
 #include "serializabledatetime.h"
 #include "serializablearray.h"
 #include "serializabledictionary.h"
+#include "serializableoptional.h"
+#include "serializableversionnumber.h"
 
 namespace QtJson {
 
@@ -62,6 +64,16 @@ struct SerializableWrapper<QHash<TKey, TValue>> {
 template <typename TKey, typename TValue>
 struct SerializableWrapper<QMap<TKey, TValue>> {
 	using type = SerializableMap<TKey, TValue>;
+};
+
+template <typename T>
+struct SerializableWrapper<std::optional<T>> {
+    using type = SerializableOptional<T>;
+};
+
+template <>
+struct SerializableWrapper<QVersionNumber> {
+    using type = SerializableVersionNumber;
 };
 
 }

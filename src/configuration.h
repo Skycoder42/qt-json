@@ -24,6 +24,7 @@ struct CommonConfiguration {
 	ByteArrayMode byteArrayMode = ByteArrayMode::Base64;
     bool dateAsTimeStamp = false;
     bool enumAsString = true;
+    bool versionAsString = false;
     ValidationFlags validation = ValidationFlag::None;
 
     bool keepObjectName = false;  // TODO remove
