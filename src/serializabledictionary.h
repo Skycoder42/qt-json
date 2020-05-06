@@ -11,6 +11,9 @@
 
 namespace QtJson {
 
+// TODO move to enum
+constexpr QCborTag MapTypeTag = static_cast<QCborTag>(259);
+
 template <typename TKey, typename TValue, template <typename, typename> class TDict>
 class SerializableDictionary: public TDict<TKey, TValue>, public ISerializable
 {
@@ -64,8 +67,8 @@ public:
 		for (auto it = this->begin(), end = this->end(); it != end; ++it) {
 			map.insert(SerializableAdapter<TKey>::toCbor(it.key(), config),
 					   SerializableAdapter<TValue>::toCbor(it.value(), config));
-		}
-		return map;
+        }
+        return {MapTypeTag, map};
 	}
 
 	void assignCbor(const QCborValue &value, const CommonConfiguration &config) override {

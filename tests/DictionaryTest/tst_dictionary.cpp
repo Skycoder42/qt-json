@@ -47,7 +47,7 @@ void DictionaryTest::setupData() const
                                        {QStringLiteral("b"), 2},
                                        {QStringLiteral("c"), 3}
                                    }}
-                                << QCborValue{QCborMap{
+                                << QCborValue{MapTypeTag, QCborMap{
                                        {QStringLiteral("a"), 1},
                                        {QStringLiteral("b"), 2},
                                        {QStringLiteral("c"), 3}
@@ -56,13 +56,13 @@ void DictionaryTest::setupData() const
     QTest::addRow("map.empty") << CommonConfiguration{}
                                << dm()
                                << QJsonValue{QJsonObject{}}
-                               << QCborValue{QCborMap{}}
+                               << QCborValue{MapTypeTag, QCborMap{}}
                                << false;
 
     QTest::addRow("hash.empty") << CommonConfiguration{}
                                 << dh()
                                 << QJsonValue{QJsonObject{}}
-                                << QCborValue{QCborMap{}}
+                                << QCborValue{MapTypeTag, QCborMap{}}
                                 << false;
 
     QTest::addRow("map.keyed.filled") << CommonConfiguration{}
@@ -74,7 +74,7 @@ void DictionaryTest::setupData() const
                                              {QStringLiteral("2.2"), false},
                                              {QStringLiteral("3.3"), true}
                                          }}
-                                      << QCborValue{QCborMap{
+                                      << QCborValue{MapTypeTag, QCborMap{
                                              {1.1, true},
                                              {2.2, false},
                                              {3.3, true}
@@ -83,7 +83,7 @@ void DictionaryTest::setupData() const
     QTest::addRow("map.keyed.empty") << CommonConfiguration{}
                                      << dmk()
                                      << QJsonValue{QJsonObject{}}
-                                     << QCborValue{QCborMap{}}
+                                     << QCborValue{MapTypeTag, QCborMap{}}
                                      << false;
 
     QTest::addRow("map.serializable.filled") << CommonConfiguration{}
@@ -95,7 +95,7 @@ void DictionaryTest::setupData() const
                                                     {QStringLiteral("2"), 2.2},
                                                     {QStringLiteral("3"), 3.3}
                                                 }}
-                                             << QCborValue{QCborMap{
+                                             << QCborValue{MapTypeTag, QCborMap{
                                                     {1, 1.1},
                                                     {2, 2.2},
                                                     {3, 3.3}
@@ -104,7 +104,7 @@ void DictionaryTest::setupData() const
     QTest::addRow("map.serializable.empty") << CommonConfiguration{}
                                             << dms()
                                             << QJsonValue{QJsonObject{}}
-                                            << QCborValue{QCborMap{}}
+                                            << QCborValue{MapTypeTag, QCborMap{}}
                                             << false;
 }
 
@@ -124,7 +124,7 @@ void DictionaryTest::setupSerData() const
     QTest::addRow("hash.filled.cbor") << CommonConfiguration{}
                                       << dh(std::make_pair(QStringLiteral("a"), 1))
                                       << QJsonValue{QJsonValue::Undefined}
-                                      << QCborValue{QCborMap{{QStringLiteral("a"), 1}}}
+                                      << QCborValue{MapTypeTag, QCborMap{{QStringLiteral("a"), 1}}}
                                       << false;
 }
 
@@ -139,12 +139,36 @@ void DictionaryTest::setupDeserData() const
                                         {QStringLiteral("b"), 2},
                                         {QStringLiteral("c"), 3}
                                     }}
-                                 << QCborValue{QCborMap{
+                                 << QCborValue{MapTypeTag, QCborMap{
                                         {QStringLiteral("a"), 1},
                                         {QStringLiteral("b"), 2},
                                         {QStringLiteral("c"), 3}
                                     }}
                                  << false;
+
+    QTest::addRow("map.untagged") << CommonConfiguration{}
+                                  << dm(std::make_pair(QStringLiteral("a"), 1),
+                                        std::make_pair(QStringLiteral("b"), 2),
+                                        std::make_pair(QStringLiteral("c"), 3))
+                                  << QJsonValue{QJsonValue::Undefined}
+                                  << QCborValue{QCborMap{
+                                         {QStringLiteral("a"), 1},
+                                         {QStringLiteral("b"), 2},
+                                         {QStringLiteral("c"), 3}
+                                     }}
+                                  << false;
+
+    QTest::addRow("hash.untagged") << CommonConfiguration{}
+                                   << dh(std::make_pair(QStringLiteral("a"), 1),
+                                         std::make_pair(QStringLiteral("b"), 2),
+                                         std::make_pair(QStringLiteral("c"), 3))
+                                   << QJsonValue{QJsonValue::Undefined}
+                                   << QCborValue{QCborMap{
+                                          {QStringLiteral("a"), 1},
+                                          {QStringLiteral("b"), 2},
+                                          {QStringLiteral("c"), 3}
+                                      }}
+                                   << false;
 }
 
 QTEST_APPLESS_MAIN(DictionaryTest)

@@ -4,6 +4,7 @@
 
 #include "iserializable.h"
 #include "serializableadapter.h"
+#include "qtjson_common_p.h"
 
 namespace QtJson {
 
@@ -57,7 +58,7 @@ public:
     }
 
     void assignCbor(const QCborValue &value, const CommonConfiguration &config) override {
-        if ((value.isTag() ? value.taggedValue() : value).isNull())
+        if (__private::extract(value).isNull())
             this->operator=(std::nullopt);
         else
             this->operator=(SerializableAdapter<TValue>::fromCbor(value, config));

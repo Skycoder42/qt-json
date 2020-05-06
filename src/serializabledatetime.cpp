@@ -1,5 +1,6 @@
 #include "serializabledatetime.h"
 #include "qtjson_exception.h"
+#include "qtjson_common_p.h"
 using namespace QtJson;
 
 SerializableDateTime::SerializableDateTime(const QDateTime &other) :
@@ -59,8 +60,10 @@ QCborValue SerializableDateTime::toCbor(const QtJson::CommonConfiguration &confi
 
 void SerializableDateTime::assignCbor(const QCborValue &value, const QtJson::CommonConfiguration &config)
 {
-	Q_UNUSED(config);
-	// TODO properly handle extraction
-	operator=(value.toDateTime());
+    Q_UNUSED(config);
+    const auto xValue = __private::extract(value, nullptr, true);
+    if (!xValue.isDateTime())
+        throw InvalidValueTypeException{xValue.type(), {QCborValue::DateTime}};
+    operator=(__private::extract(value, nullptr, true).toDateTime());
 }
 

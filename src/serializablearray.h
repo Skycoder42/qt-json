@@ -81,9 +81,7 @@ public:
 	}
 
 	void assignCbor(const QCborValue &value, const CommonConfiguration &config) override {
-		QCborTag tag = static_cast<QCborTag>(-1);
-		const auto xValue = __private::extract(value, &tag);
-		__private::verifyTag(tag, true, HomogeneousArrayTag); // TODO config
+        const auto xValue = __private::extract(value);
         if (!xValue.isArray())
             throw InvalidValueTypeException{xValue.type(), {QCborValue::Array}};
 		const auto array = xValue.toArray();
@@ -160,7 +158,7 @@ public:
 	void assignCbor(const QCborValue &value, const CommonConfiguration &config) override {
 		QCborTag tag = static_cast<QCborTag>(-1);
 		const auto xValue = __private::extract(value, &tag);
-		__private::verifyTag(tag, true, FiniteSetTag); // TODO config
+        __private::verifyTag(tag, true, FiniteSetTag);
         if (!xValue.isArray())
             throw InvalidValueTypeException{xValue.type(), {QCborValue::Array}};
 		for (const auto &element : xValue.toArray())

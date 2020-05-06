@@ -64,14 +64,7 @@ T findInfo(const QMetaObject *metaObject, const char *key, const T &defaultValue
 	return findInfo(metaObject, key, QVariant::fromValue(defaultValue)).template value<T>();
 }
 
-inline QCborValue extract(const QCborValue &value, QCborTag *innerTag = nullptr) {
-	if (value.isTag()) {
-		if (innerTag)
-			*innerTag = value.tag();
-		return value.taggedValue();
-	} else
-		return value;
-}
+QTJSON_EXPORT QCborValue extract(const QCborValue &value, QCborTag *innerTag = nullptr, bool skipInner = false);
 
 QTJSON_EXPORT void verifyTagImpl(QCborTag tag, bool allowUntagged = true, const QList<QCborTag> &expected = {});
 
