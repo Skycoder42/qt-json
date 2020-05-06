@@ -24,6 +24,8 @@ struct DataValueInfo<QJsonValue> {
 
 	static constexpr auto Undefined = QJsonValue::Undefined;
 	static constexpr auto Null = QJsonValue::Null;
+	static constexpr auto String = QJsonValue::String;
+	static constexpr auto Integer = QJsonValue::Double;
 
 	inline static QStringList keys(const Map &map) {
 		return map.keys();
@@ -38,6 +40,8 @@ struct DataValueInfo<QCborValue> {
 
 	static constexpr auto Undefined = QCborValue::Undefined;
 	static constexpr auto Null = QCborValue::Null;
+	static constexpr auto String = QCborValue::String;
+	static constexpr auto Integer = QCborValue::Integer;
 
 	inline static QStringList keys(const Map &map) {
 		QStringList keys;
@@ -70,7 +74,7 @@ QTJSON_EXPORT void verifyTagImpl(QCborTag tag, bool allowUntagged = true, const 
 
 template <typename... TArgs>
 inline void verifyTag(QCborTag tag, bool allowUntagged, TArgs&&... args) {
-    verifyTagImpl(tag, allowUntagged, QList<QCborTag>{std::forward<TArgs>(args)...});
+	verifyTagImpl(tag, allowUntagged, QList<QCborTag>{std::forward<TArgs>(args)...});
 }
 
 }

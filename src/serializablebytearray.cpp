@@ -39,8 +39,9 @@ QJsonValue SerializableByteArray::toJson(const QtJson::CommonConfiguration &conf
 
 void SerializableByteArray::assignJson(const QJsonValue &value, const QtJson::CommonConfiguration &config)
 {
-    if (!value.isString())
-        throw InvalidValueTypeException{value.type(), {QJsonValue::String}};
+	if (!value.isString()) {
+		throw InvalidValueTypeException{value.type(), {QJsonValue::String}};
+	}
 	switch (config.byteArrayMode) {
 	case ByteArrayMode::Base64:
 		operator=(fromBase64(value.toString().toUtf8(), Base64Encoding));
@@ -73,8 +74,8 @@ QCborValue SerializableByteArray::toCbor(const QtJson::CommonConfiguration &conf
 void SerializableByteArray::assignCbor(const QCborValue &value, const QtJson::CommonConfiguration &config)
 {
 	const auto xValue = __private::extract(value);
-    if (!xValue.isByteArray())
-        throw InvalidValueTypeException{xValue.type(), {QCborValue::ByteArray}};
+	if (!xValue.isByteArray())
+		throw InvalidValueTypeException{xValue.type(), {QCborValue::ByteArray}};
 	Q_UNUSED(config);
 	operator=((value.isTag() ? value.taggedValue() : value).toByteArray());
 }

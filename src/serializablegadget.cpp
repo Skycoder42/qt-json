@@ -17,6 +17,8 @@ QJsonValue SerializableGadget::toJson(const CommonConfiguration &config) const
 
 void SerializableGadget::assignJson(const QJsonValue &value, const CommonConfiguration &config)
 {
+	if (!value.isObject())
+		throw InvalidValueTypeException{value.type(), {QJsonValue::Object}};
 	deserialize<QJsonValue>(value.toObject(), config);
 }
 
@@ -27,6 +29,8 @@ QCborValue SerializableGadget::toCbor(const CommonConfiguration &config) const
 
 void SerializableGadget::assignCbor(const QCborValue &value, const CommonConfiguration &config)
 {
+	if (!value.isMap())
+		throw InvalidValueTypeException{value.type(), {QCborValue::Map}};
 	deserialize<QCborValue>(value.toMap(), config);
 }
 
@@ -128,7 +132,7 @@ void SerializableGadget::deserialize(const typename DataValueInfo<TValue>::Map &
 			QVariant variant{property.userType(), nullptr};
 
 			if (property.isEnumType()) {
-				if (config.enumAsString) {
+				if (value.type() == DataValueInfo<TValue>::String) {
 					auto ok = true;
 					const auto key = value.toString().toUtf8();
 					const auto metaEnum = property.enumerator();
@@ -142,12 +146,13 @@ void SerializableGadget::deserialize(const typename DataValueInfo<TValue>::Map &
 
 					if (!ok)
 						throw InvalidPropertyValueException{property, value};
-				} else {
+				} else if (value.type() == DataValueInfo<TValue>::Integer) {
 					if constexpr(std::is_same_v<TValue, QCborValue>)
 						variant = static_cast<int>(value.toInteger());
 					else
 						variant = value.toInt();
-				}
+				} else
+					throw InvalidValueTypeException{value.type(), {DataValueInfo<TValue>::String, DataValueInfo<TValue>::Integer}};
 			} else
 				variant = value.toVariant();
 

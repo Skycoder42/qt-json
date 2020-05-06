@@ -69,6 +69,8 @@ QByteArray InvalidValueTypeException::typeName(QJsonValue::Type type)
 		return "object";
 	case QJsonValue::Undefined:
 		return "undefined";
+	default:
+		Q_UNREACHABLE();
 	}
 }
 
@@ -109,6 +111,8 @@ QByteArray InvalidValueTypeException::typeName(QCborValue::Type type)
 		return "uuid";
 	case QCborValue::Invalid:
 		return "invalid";
+	default:
+		Q_UNREACHABLE();
 	}
 }
 
