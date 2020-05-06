@@ -1,7 +1,7 @@
 #pragma once
 
 #include <serializablegadget.h>
-#include <serializablebytearray.h>
+#include <testserializable.h>
 
 class TestGadget : public QtJson::SerializableGadget
 {
@@ -38,7 +38,7 @@ public:
 
 	QTJSON_PROP(prop5, double) {};
 
-	QTJSON_PROP(prop6, QByteArray);
+	QTJSON_PROP(prop6, TestSerializable);
 
 	Q_PROPERTY(Flags prop7 READ getProp7 WRITE setProp7)
 

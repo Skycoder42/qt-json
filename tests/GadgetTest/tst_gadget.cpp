@@ -13,12 +13,6 @@ protected:
 	void setupDeserData() const override;
 
 private:
-	inline CommonConfiguration cb(ByteArrayMode mode) const {
-		CommonConfiguration config;
-		config.byteArrayMode = mode;
-		return config;
-	}
-
 	inline CommonConfiguration ce(bool enumAsString) const {
 		CommonConfiguration config;
 		config.enumAsString = enumAsString;
@@ -37,9 +31,9 @@ private:
 		return config;
 	}
 
-	inline ConstSerPtr db(QByteArray data) const {
+	inline ConstSerPtr dx(double data) const {
 		TestGadget gadget;
-		gadget.prop6 = std::move(data);
+		gadget.prop6.value = data;
 		return d(gadget);
 	}
 
@@ -62,7 +56,7 @@ private:
 			{QStringLiteral("prop3"), 3},
 			{QStringLiteral("prop4"), 4},
 			{QStringLiteral("prop5"), 0.0},
-			{QStringLiteral("prop6"), QString{}},
+			{QStringLiteral("prop6"), 0.0},
 			{QStringLiteral("prop7"), QString{}},
 			{QStringLiteral("prop8"), QStringLiteral("Value1")},
 		};
@@ -82,7 +76,7 @@ private:
 			{QStringLiteral("prop3"), 3},
 			{QStringLiteral("prop4"), 4},
 			{QStringLiteral("prop5"), 0.0},
-			{QStringLiteral("prop6"), QCborValue{QCborKnownTags::ExpectedBase64, QByteArray{}}},
+			{QStringLiteral("prop6"), 0.0},
 			{QStringLiteral("prop7"), QString{}},
 			{QStringLiteral("prop8"), QStringLiteral("Value1")},
 		};
@@ -110,7 +104,7 @@ void GadgetTest::setupData() const
 	filled.prop3 = 33;
 	filled.prop4 = 44;
 	filled.prop5 = 5.5;
-	filled.prop6 = QByteArray{"66"};
+	filled.prop6.value = 6.6;
 	filled.prop7 = TestGadget::Flag::Flag1 | TestGadget::Flag::Flag2;
 	filled.prop8 = TestGadget::Enum::Value3;
 	QTest::addRow("filled") << CommonConfiguration{}
@@ -120,7 +114,7 @@ void GadgetTest::setupData() const
 								   {QStringLiteral("prop3"), 33},
 								   {QStringLiteral("prop4"), 44},
 								   {QStringLiteral("prop5"), 5.5},
-								   {QStringLiteral("prop6"), QStringLiteral("NjY=")},
+								   {QStringLiteral("prop6"), 6.6},
 								   {QStringLiteral("prop7"), QStringLiteral("Flag1|Flag2")},
 								   {QStringLiteral("prop8"), QStringLiteral("Value3")},
 							   }}
@@ -129,7 +123,7 @@ void GadgetTest::setupData() const
 								   {QStringLiteral("prop3"), 33},
 								   {QStringLiteral("prop4"), 44},
 								   {QStringLiteral("prop5"), 5.5},
-								   {QStringLiteral("prop6"), QCborValue{QCborKnownTags::ExpectedBase64, QByteArray{"66"}}},
+								   {QStringLiteral("prop6"), 6.6},
 								   {QStringLiteral("prop7"), QStringLiteral("Flag1|Flag2")},
 								   {QStringLiteral("prop8"), QStringLiteral("Value3")},
 							   }}
@@ -146,12 +140,6 @@ void GadgetTest::setupData() const
 								  {QStringLiteral("prop8"), 0}
 							  })
 						   << false;
-
-	QTest::addRow("config") << cb(ByteArrayMode::Hex)
-							<< db("test")
-							<< gj({{QStringLiteral("prop6"), QStringLiteral("74657374")}})
-							<< gc({{QStringLiteral("prop6"), QCborValue{QCborKnownTags::ExpectedBase16, QByteArray{"test"}}}})
-							<< false;
 }
 
 void GadgetTest::setupSerData() const

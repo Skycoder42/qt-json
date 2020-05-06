@@ -6,10 +6,6 @@ CONFIG -= app_bundle
 
 TEMPLATE = app
 
-HEADERS += \
-	testgadget.h
-
-SOURCES +=  tst_gadget.cpp \
-	testgadget.cpp
+SOURCES +=  tst_optional.cpp
 
 include(../tests.pri)
