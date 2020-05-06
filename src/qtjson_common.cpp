@@ -10,7 +10,7 @@ QVariant QtJson::__private::findInfo(const QMetaObject *metaObject, const char *
 		return QVariant{QString::fromUtf8(metaObject->classInfo(cIdx).value())};
 }
 
-void QtJson::__private::verifyTag(QCborTag tag, bool allowUntagged, const QList<QCborTag> &expected)
+void QtJson::__private::verifyTagImpl(QCborTag tag, bool allowUntagged, const QList<QCborTag> &expected)
 {
 	if (tag == static_cast<QCborTag>(-1) && allowUntagged)
 		return;

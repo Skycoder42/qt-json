@@ -73,11 +73,11 @@ inline QCborValue extract(const QCborValue &value, QCborTag *innerTag = nullptr)
 		return value;
 }
 
-QTJSON_EXPORT void verifyTag(QCborTag tag, bool allowUntagged = true, const QList<QCborTag> &expected = {});
+QTJSON_EXPORT void verifyTagImpl(QCborTag tag, bool allowUntagged = true, const QList<QCborTag> &expected = {});
 
 template <typename... TArgs>
 inline void verifyTag(QCborTag tag, bool allowUntagged, TArgs&&... args) {
-	verifyTag(tag, allowUntagged, QList<QCborTag>{std::forward<TArgs>(args)...});
+    verifyTagImpl(tag, allowUntagged, QList<QCborTag>{std::forward<TArgs>(args)...});
 }
 
 }

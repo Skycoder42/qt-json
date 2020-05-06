@@ -41,8 +41,8 @@ void SerializableDateTime::assignJson(const QJsonValue &value, const QtJson::Com
 		operator=(fromSecsSinceEpoch(value.toInt()));
 	else if (value.isString())
 		operator=(fromString(value.toString(), Qt::ISODateWithMs));
-	else
-		throw InvalidValueTypeException{value.type(), QJsonValue::Double, QJsonValue::String};
+    else
+        throw InvalidValueTypeException{value.type(), {QJsonValue::Double, QJsonValue::String}};
 }
 
 QCborValue SerializableDateTime::toCbor(const QtJson::CommonConfiguration &config) const

@@ -50,8 +50,8 @@ public:
 	}
 
 	void assignJson(const QJsonValue &value, const CommonConfiguration &config) override {
-		if (!value.isObject())
-			throw InvalidValueTypeException{value.type(), QJsonValue::Object};
+        if (!value.isObject())
+            throw InvalidValueTypeException{value.type(), {QJsonValue::Object}};
 		const auto object = value.toObject();
 		for (auto it = object.begin(), end = object.end(); it != end; ++it) {
 			this->insert(QVariant{it.key()}.template value<TKey>(),
@@ -70,8 +70,8 @@ public:
 
 	void assignCbor(const QCborValue &value, const CommonConfiguration &config) override {
 		const auto xValue = __private::extract(value);
-		if (!xValue.isMap())
-			throw InvalidValueTypeException{value.type(), QCborValue::Map};
+        if (!xValue.isMap())
+            throw InvalidValueTypeException{value.type(), {QCborValue::Map}};
 		const auto map = xValue.toMap();
 		for (auto it = map.begin(), end = map.end(); it != end; ++it) {
 			this->insert(SerializableAdapter<TKey>::fromCbor(it.key(), config),

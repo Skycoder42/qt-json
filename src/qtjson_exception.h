@@ -43,15 +43,7 @@ class QTJSON_EXPORT InvalidValueTypeException : public Exception
 {
 public:
 	InvalidValueTypeException(QJsonValue::Type actual, const QList<QJsonValue::Type> &expected = {});
-	template <typename... TArgs>
-	inline InvalidValueTypeException(QJsonValue::Type actual, TArgs&&... args) :
-		InvalidValueTypeException{actual, QList<QJsonValue::Type>{std::forward<TArgs>(args)...}}
-	{}
 	InvalidValueTypeException(QCborValue::Type actual, const QList<QCborValue::Type> &expected = {});
-	template <typename... TArgs>
-	inline InvalidValueTypeException(QCborValue::Type actual, TArgs&&... args) :
-		InvalidValueTypeException{actual, QList<QCborValue::Type>{std::forward<TArgs>(args)...}}
-	{}
 
 	void raise() const override;
 	ExceptionBase *clone() const override;
