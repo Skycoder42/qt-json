@@ -9,7 +9,8 @@ class DateTimeTest : public SerializationTest<SerializableDateTime>
 
 protected:
 	void setupData() const override;
-    void setupSerData() const override;
+	void setupSerData() const override;
+	void setupDeserData() const override;
 
 private:
 	inline ConstSerPtr dd(const QDateTime &data) const {
@@ -22,8 +23,8 @@ private:
 		return config;
 	}
 
-    inline QString timeZoneOffset(int localOffset, bool useZ = true) const {
-        if (localOffset == 0 && useZ)
+	inline QString timeZoneOffset(int localOffset, bool useZ = true) const {
+		if (localOffset == 0 && useZ)
 			return QStringLiteral("Z");
 		else {
 			return QStringLiteral("+%1:%2")
@@ -38,7 +39,7 @@ void DateTimeTest::setupData() const
 	const auto localOffset = QDateTime::currentDateTime().offsetFromUtc();
 	const auto offsetStr = timeZoneOffset(localOffset);
 
-    QDateTime dt{{2020, 10, 10}, {17, 24, 30, 123}};
+	QDateTime dt{{2020, 10, 10}, {17, 24, 30, 123}};
 	QTest::addRow("string.local") << c(false)
 								  << dd(dt)
 								  << QJsonValue{QStringLiteral("2020-10-10T17:24:30.123") + offsetStr}
@@ -70,9 +71,9 @@ void DateTimeTest::setupData() const
 
 	dt = {{2020, 10, 10}, {17, 24, 30, 123}, QTimeZone::systemTimeZone()};
 	QTest::addRow("string.timezone") << c(false)
-                                     << dd(dt)
-                                     << QJsonValue{QStringLiteral("2020-10-10T17:24:30.123") + timeZoneOffset(localOffset, false)}
-                                     << QCborValue{dt}
+									 << dd(dt)
+									 << QJsonValue{QStringLiteral("2020-10-10T17:24:30.123") + timeZoneOffset(localOffset, false)}
+									 << QCborValue{dt}
 									 << false;
 
 	dt = {{2020, 10, 10}, {17, 24, 30}};
@@ -106,7 +107,16 @@ void DateTimeTest::setupSerData() const
 											 QCborKnownTags::UnixTime_t,
 											 1602350670
 										 }
-                                      << false;
+									  << false;
+}
+
+void DateTimeTest::setupDeserData() const
+{
+	QTest::addRow("invalid") << c(false)
+							 << dd({})
+							 << QJsonValue{true}
+							 << QCborValue{QStringLiteral("2020-10-10T17:24:30.123Z")}
+							 << true;
 }
 
 QTEST_APPLESS_MAIN(DateTimeTest)

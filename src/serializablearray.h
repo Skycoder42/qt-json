@@ -64,8 +64,8 @@ public:
 	}
 
 	void assignJson(const QJsonValue &value, const CommonConfiguration &config) override {
-        if (!value.isArray())
-            throw InvalidValueTypeException{value.type(), {QJsonValue::Array}};
+		if (!value.isArray())
+			throw InvalidValueTypeException{value.type(), {QJsonValue::Array}};
 		const auto array = value.toArray();
 		if constexpr (__private::has_reserve_v<TList<TValue>>)
 			this->reserve(array.size());
@@ -81,9 +81,9 @@ public:
 	}
 
 	void assignCbor(const QCborValue &value, const CommonConfiguration &config) override {
-        const auto xValue = __private::extract(value);
-        if (!xValue.isArray())
-            throw InvalidValueTypeException{xValue.type(), {QCborValue::Array}};
+		const auto xValue = __private::extract(value);
+		if (!xValue.isArray())
+			throw InvalidValueTypeException{xValue.type(), {QCborValue::Array}};
 		const auto array = xValue.toArray();
 		if constexpr (__private::has_reserve_v<TList<TValue>>)
 			this->reserve(array.size());
@@ -141,8 +141,8 @@ public:
 	}
 
 	void assignJson(const QJsonValue &value, const CommonConfiguration &config) override {
-        if (!value.isArray())
-            throw InvalidValueTypeException{value.type(), {QJsonValue::Array}};
+		if (!value.isArray())
+			throw InvalidValueTypeException{value.type(), {QJsonValue::Array}};
 		const auto array = value.toArray();
 		for (const auto &element : array)
 			this->insert(SerializableAdapter<TValue>::fromJson(element, config));
@@ -158,9 +158,9 @@ public:
 	void assignCbor(const QCborValue &value, const CommonConfiguration &config) override {
 		QCborTag tag = static_cast<QCborTag>(-1);
 		const auto xValue = __private::extract(value, &tag);
-        __private::verifyTag(tag, true, FiniteSetTag);
-        if (!xValue.isArray())
-            throw InvalidValueTypeException{xValue.type(), {QCborValue::Array}};
+		__private::verifyTag(tag, false, FiniteSetTag);
+		if (!xValue.isArray())
+			throw InvalidValueTypeException{xValue.type(), {QCborValue::Array}};
 		for (const auto &element : xValue.toArray())
 			this->insert(SerializableAdapter<TValue>::fromCbor(element, config));
 	}
