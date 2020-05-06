@@ -8,6 +8,7 @@ SUBDIRS +=  \
 	DictionaryTest \
 	GadgetTest \
 	OptionalTest \
+	VersionNumberTest \
 	testlib
 
 for(sdir, SUBDIRS): \
@@ -17,3 +18,4 @@ for(sdir, SUBDIRS): \
 ArrayTest.depends += AdapterTest
 DictionaryTest.depends += AdapterTest
 OptionalTest.depends += AdapterTest
+VersionNumberTest.depends += ArrayTest
