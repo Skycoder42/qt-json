@@ -21,22 +21,22 @@ bool TestSerializable::operator!=(const TestSerializable &other) const
 		   tag != other.tag;
 }
 
-QJsonValue TestSerializable::toJson(const CommonConfiguration &) const
+QJsonValue TestSerializable::toJson(const Configuration &) const
 {
 	return value;
 }
 
-void TestSerializable::assignJson(const QJsonValue &value, const CommonConfiguration &)
+void TestSerializable::assignJson(const QJsonValue &value, const Configuration &)
 {
 	this->value = value.toDouble();
 }
 
-QCborValue TestSerializable::toCbor(const CommonConfiguration &) const
+QCborValue TestSerializable::toCbor(const Configuration &) const
 {
 	return tag ? QCborValue{*tag, value} : value;
 }
 
-void TestSerializable::assignCbor(const QCborValue &value, const CommonConfiguration &)
+void TestSerializable::assignCbor(const QCborValue &value, const Configuration &)
 {
 	if (value.isTag()) {
 		tag = static_cast<QCborKnownTags>(value.tag());

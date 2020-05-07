@@ -15,8 +15,8 @@ private:
 	inline ConstSerPtr db(const QByteArray &data) const {
 		return d(data);
 	}
-	inline CommonConfiguration c(ByteArrayMode mode) const {
-		CommonConfiguration config;
+	inline Configuration c(ByteArrayMode mode) const {
+		Configuration config;
 		config.byteArrayMode = mode;
 		return config;
 	}

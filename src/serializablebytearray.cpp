@@ -1,6 +1,6 @@
 #include "serializablebytearray.h"
 #include "qtjson_exception.h"
-#include "qtjson_common_p.h"
+#include "qtjson_helpers.h"
 using namespace QtJson;
 
 SerializableByteArray::SerializableByteArray(const QByteArray &other) :
@@ -23,7 +23,7 @@ SerializableByteArray &SerializableByteArray::operator=(QByteArray &&other) noex
 	return *this;
 }
 
-QJsonValue SerializableByteArray::toJson(const QtJson::CommonConfiguration &config) const
+QJsonValue SerializableByteArray::toJson(const QtJson::Configuration &config) const
 {
 	switch (config.byteArrayMode) {
 	case ByteArrayMode::Base64:
@@ -37,7 +37,7 @@ QJsonValue SerializableByteArray::toJson(const QtJson::CommonConfiguration &conf
 	}
 }
 
-void SerializableByteArray::assignJson(const QJsonValue &value, const QtJson::CommonConfiguration &config)
+void SerializableByteArray::assignJson(const QJsonValue &value, const QtJson::Configuration &config)
 {
 	if (!value.isString()) {
 		throw InvalidValueTypeException{value.type(), {QJsonValue::String}};
@@ -57,7 +57,7 @@ void SerializableByteArray::assignJson(const QJsonValue &value, const QtJson::Co
 	}
 }
 
-QCborValue SerializableByteArray::toCbor(const QtJson::CommonConfiguration &config) const
+QCborValue SerializableByteArray::toCbor(const QtJson::Configuration &config) const
 {
 	switch (config.byteArrayMode) {
 	case ByteArrayMode::Base64:
@@ -71,7 +71,7 @@ QCborValue SerializableByteArray::toCbor(const QtJson::CommonConfiguration &conf
 	}
 }
 
-void SerializableByteArray::assignCbor(const QCborValue &value, const QtJson::CommonConfiguration &config)
+void SerializableByteArray::assignCbor(const QCborValue &value, const QtJson::Configuration &config)
 {
 	const auto xValue = __private::extract(value);
 	if (!xValue.isByteArray())

@@ -36,27 +36,27 @@ private:
 
 void OptionalTest::setupData() const
 {
-	QTest::addRow("int.null") << CommonConfiguration{}
+	QTest::addRow("int.null") << Configuration{}
 							  << di()
 							  << QJsonValue{QJsonValue::Null}
 							  << QCborValue{QCborValue::Null}
 							  << false;
-	QTest::addRow("int.value") << CommonConfiguration{}
+	QTest::addRow("int.value") << Configuration{}
 							   << di(42)
 							   << QJsonValue{42}
 							   << QCborValue{42}
 							   << false;
-	QTest::addRow("ser.null") << CommonConfiguration{}
+	QTest::addRow("ser.null") << Configuration{}
 							  << ds()
 							  << QJsonValue{QJsonValue::Null}
 							  << QCborValue{QCborValue::Null}
 							  << false;
-	QTest::addRow("ser.value") << CommonConfiguration{}
+	QTest::addRow("ser.value") << Configuration{}
 							   << ds(4.2)
 							   << QJsonValue{4.2}
 							   << QCborValue{4.2}
 							   << false;
-	QTest::addRow("ser.tagged") << CommonConfiguration{}
+	QTest::addRow("ser.tagged") << Configuration{}
 								<< ds(4.2, QCborKnownTags::Decimal)
 								<< QJsonValue{QJsonValue::Undefined}
 								<< QCborValue{QCborKnownTags::Decimal, 4.2}

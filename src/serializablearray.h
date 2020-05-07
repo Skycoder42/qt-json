@@ -3,7 +3,7 @@
 #include "iserializable.h"
 #include "serializableadapter.h"
 #include "qtjson_exception.h"
-#include "qtjson_common_p.h"
+#include "qtjson_helpers.h"
 
 #include <QtCore/QtContainerFwd>
 #include <QtCore/QJsonArray>
@@ -56,14 +56,14 @@ public:
 		return *this;
 	}
 
-	QJsonValue toJson(const CommonConfiguration &config) const override {
+	QJsonValue toJson(const Configuration &config) const override {
 		QJsonArray array;
 		for (const auto &value : qAsConst(*this))
 			array.push_back(SerializableAdapter<TValue>::toJson(value, config));
 		return array;
 	}
 
-	void assignJson(const QJsonValue &value, const CommonConfiguration &config) override {
+	void assignJson(const QJsonValue &value, const Configuration &config) override {
 		if (!value.isArray())
 			throw InvalidValueTypeException{value.type(), {QJsonValue::Array}};
 		const auto array = value.toArray();
@@ -73,14 +73,14 @@ public:
 			this->append(SerializableAdapter<TValue>::fromJson(element, config));
 	}
 
-	QCborValue toCbor(const CommonConfiguration &config) const override {
+	QCborValue toCbor(const Configuration &config) const override {
 		QCborArray array;
 		for (const auto &value : qAsConst(*this))
 			array.push_back(SerializableAdapter<TValue>::toCbor(value, config));
 		return {HomogeneousArrayTag, array};
 	}
 
-	void assignCbor(const QCborValue &value, const CommonConfiguration &config) override {
+	void assignCbor(const QCborValue &value, const Configuration &config) override {
 		const auto xValue = __private::extract(value);
 		if (!xValue.isArray())
 			throw InvalidValueTypeException{xValue.type(), {QCborValue::Array}};
@@ -91,13 +91,13 @@ public:
 			this->append(SerializableAdapter<TValue>::fromCbor(element, config));
 	}
 
-	inline static SerializableArray fromJson(const QJsonValue &value, const CommonConfiguration &config) {
+	inline static SerializableArray fromJson(const QJsonValue &value, const Configuration &config) {
 		SerializableArray data;
 		data.assignJson(value, config);
 		return data;
 	}
 
-	inline static SerializableArray fromCbor(const QCborValue &value, const CommonConfiguration &config) {
+	inline static SerializableArray fromCbor(const QCborValue &value, const Configuration &config) {
 		SerializableArray data;
 		data.assignCbor(value, config);
 		return data;
@@ -133,14 +133,14 @@ public:
 		return *this;
 	}
 
-	QJsonValue toJson(const CommonConfiguration &config) const override {
+	QJsonValue toJson(const Configuration &config) const override {
 		QJsonArray array;
 		for (const auto &value : qAsConst(*this))
 			array.append(SerializableAdapter<TValue>::toJson(value, config));
 		return array;
 	}
 
-	void assignJson(const QJsonValue &value, const CommonConfiguration &config) override {
+	void assignJson(const QJsonValue &value, const Configuration &config) override {
 		if (!value.isArray())
 			throw InvalidValueTypeException{value.type(), {QJsonValue::Array}};
 		const auto array = value.toArray();
@@ -148,30 +148,31 @@ public:
 			this->insert(SerializableAdapter<TValue>::fromJson(element, config));
 	}
 
-	QCborValue toCbor(const CommonConfiguration &config) const override {
+	QCborValue toCbor(const Configuration &config) const override {
 		QCborArray array;
 		for (const auto &value : qAsConst(*this))
 			array.append(SerializableAdapter<TValue>::toCbor(value, config));
 		return {FiniteSetTag, array};
 	}
 
-	void assignCbor(const QCborValue &value, const CommonConfiguration &config) override {
+	void assignCbor(const QCborValue &value, const Configuration &config) override {
 		QCborTag tag = static_cast<QCborTag>(-1);
-		const auto xValue = __private::extract(value, &tag);
-		__private::verifyTag(tag, false, FiniteSetTag);
+        const auto xValue = __private::extract(value, &tag);
+        if (tag != FiniteSetTag)
+            throw InvalidValueTagException{tag, {FiniteSetTag}};
 		if (!xValue.isArray())
 			throw InvalidValueTypeException{xValue.type(), {QCborValue::Array}};
 		for (const auto &element : xValue.toArray())
 			this->insert(SerializableAdapter<TValue>::fromCbor(element, config));
 	}
 
-	inline static SerializableArray fromJson(const QJsonValue &value, const CommonConfiguration &config) {
+	inline static SerializableArray fromJson(const QJsonValue &value, const Configuration &config) {
 		SerializableArray data;
 		data.assignJson(value, config);
 		return data;
 	}
 
-	inline static SerializableArray fromCbor(const QCborValue &value, const CommonConfiguration &config) {
+	inline static SerializableArray fromCbor(const QCborValue &value, const Configuration &config) {
 		SerializableArray data;
 		data.assignCbor(value, config);
 		return data;

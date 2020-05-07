@@ -17,8 +17,8 @@ private:
 		return d(data);
 	}
 
-	inline CommonConfiguration c(bool dateAsTimeStamp) const {
-		CommonConfiguration config;
+	inline Configuration c(bool dateAsTimeStamp) const {
+		Configuration config;
 		config.dateAsTimeStamp = dateAsTimeStamp;
 		return config;
 	}

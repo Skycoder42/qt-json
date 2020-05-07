@@ -19,7 +19,7 @@ enum class ValidationFlag {
 };
 Q_DECLARE_FLAGS(ValidationFlags, ValidationFlag)
 
-struct CommonConfiguration {
+struct Configuration {
 	bool ignoreStored = false;
 	ByteArrayMode byteArrayMode = ByteArrayMode::Base64;
 	bool dateAsTimeStamp = false;
@@ -27,7 +27,6 @@ struct CommonConfiguration {
 	bool versionAsString = false;
 	ValidationFlags validation = ValidationFlag::Full;
 
-	bool keepObjectName = false;  // TODO remove
 	QVariantMap extraConfig;
 };
 
@@ -35,6 +34,6 @@ struct CommonConfiguration {
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QtJson::ValidationFlags)
 
-Q_DECLARE_METATYPE(QtJson::CommonConfiguration)
-Q_DECLARE_TYPEINFO(QtJson::CommonConfiguration, Q_MOVABLE_TYPE);
+Q_DECLARE_METATYPE(QtJson::Configuration)
+Q_DECLARE_TYPEINFO(QtJson::Configuration, Q_MOVABLE_TYPE);
 

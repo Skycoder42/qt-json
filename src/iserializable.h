@@ -12,11 +12,11 @@ class QTJSON_EXPORT ISerializable
 public:
 	virtual ~ISerializable();
 
-	virtual QJsonValue toJson(const CommonConfiguration &config = {}) const = 0;
-	virtual void assignJson(const QJsonValue &value, const CommonConfiguration &config = {}) = 0;
+    virtual QJsonValue toJson(const Configuration &config = {}) const = 0;
+    virtual void assignJson(const QJsonValue &value, const Configuration &config = {}) = 0;
 
-	virtual QCborValue toCbor(const CommonConfiguration &config = {}) const = 0;
-	virtual void assignCbor(const QCborValue &value, const CommonConfiguration &config = {}) = 0;
+    virtual QCborValue toCbor(const Configuration &config = {}) const = 0;
+    virtual void assignCbor(const QCborValue &value, const Configuration &config = {}) = 0;
 };
 
 }

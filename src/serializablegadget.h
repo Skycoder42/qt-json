@@ -21,10 +21,10 @@ class QTJSON_EXPORT SerializableGadget : public ISerializable
 	Q_GADGET
 
 public:
-	Q_INVOKABLE QJsonValue toJson(const QtJson::CommonConfiguration &config = {}) const override;
-	Q_INVOKABLE void assignJson(const QJsonValue &value, const QtJson::CommonConfiguration &config = {}) override;
-	Q_INVOKABLE QCborValue toCbor(const QtJson::CommonConfiguration &config = {}) const override;
-	Q_INVOKABLE void assignCbor(const QCborValue &value, const QtJson::CommonConfiguration &config = {}) override;
+	Q_INVOKABLE QJsonValue toJson(const QtJson::Configuration &config = {}) const override;
+	Q_INVOKABLE void assignJson(const QJsonValue &value, const QtJson::Configuration &config = {}) override;
+	Q_INVOKABLE QCborValue toCbor(const QtJson::Configuration &config = {}) const override;
+	Q_INVOKABLE void assignCbor(const QCborValue &value, const QtJson::Configuration &config = {}) override;
 
 protected:
 	virtual const QMetaObject *getMetaObject() const = 0;
@@ -34,10 +34,12 @@ private:
 	ISerializable *asSerializable(const QMetaObject *mo,
 								  const QMetaProperty &property) const;
 
+    template <typename TValue>
+    TValue findInfo(const QMetaObject *metaObject, const char *key, const TValue &defaultValue) const;
 	template <typename TValue>
-	typename __private::DataValueInfo<TValue>::Map serialize(const CommonConfiguration &config) const;
+	typename __private::DataValueInfo<TValue>::Map serialize(const Configuration &config) const;
 	template <typename TValue>
-	void deserialize(const typename __private::DataValueInfo<TValue>::Map &map, const CommonConfiguration &config);
+	void deserialize(const typename __private::DataValueInfo<TValue>::Map &map, const Configuration &config);
 };
 
 }
@@ -48,13 +50,13 @@ private:
 #define QTJSON_SERIALIZABLE_GADGET(Type) \
 	QTJSON_SERIALIZABLE \
 	public: \
-		static Type fromJson(const QJsonValue &value, const QtJson::CommonConfiguration &config = {}) { \
+        static Type fromJson(const QJsonValue &value, const QtJson::Configuration &config = {}) { \
 			Type _instance; \
 			_instance.assignJson(value, config); \
 			return _instance; \
 		} \
 		\
-		static Type fromCbor(const QCborValue &value, const QtJson::CommonConfiguration &config = {}) { \
+        static Type fromCbor(const QCborValue &value, const QtJson::Configuration &config = {}) { \
 			Type _instance; \
 			_instance.assignCbor(value, config); \
 			return _instance; \

@@ -18,8 +18,8 @@ private:
 		return d(QVersionNumber{std::forward<TArgs>(args)...});
 	}
 
-	inline CommonConfiguration c(bool versionAsString) const {
-		CommonConfiguration config;
+	inline Configuration c(bool versionAsString) const {
+		Configuration config;
 		config.versionAsString = versionAsString;
 		return config;
     }

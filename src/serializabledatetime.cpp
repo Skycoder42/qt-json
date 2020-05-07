@@ -1,6 +1,6 @@
 #include "serializabledatetime.h"
 #include "qtjson_exception.h"
-#include "qtjson_common_p.h"
+#include "qtjson_helpers.h"
 using namespace QtJson;
 
 SerializableDateTime::SerializableDateTime(const QDateTime &other) :
@@ -23,7 +23,7 @@ SerializableDateTime &SerializableDateTime::operator=(QDateTime &&other) noexcep
 	return *this;
 }
 
-QJsonValue SerializableDateTime::toJson(const QtJson::CommonConfiguration &config) const
+QJsonValue SerializableDateTime::toJson(const QtJson::Configuration &config) const
 {
 	if (config.dateAsTimeStamp)
 		return toUTC().toSecsSinceEpoch();
@@ -35,7 +35,7 @@ QJsonValue SerializableDateTime::toJson(const QtJson::CommonConfiguration &confi
 	}
 }
 
-void SerializableDateTime::assignJson(const QJsonValue &value, const QtJson::CommonConfiguration &config)
+void SerializableDateTime::assignJson(const QJsonValue &value, const QtJson::Configuration &config)
 {
 	Q_UNUSED(config);
 	if (value.isDouble())
@@ -46,7 +46,7 @@ void SerializableDateTime::assignJson(const QJsonValue &value, const QtJson::Com
         throw InvalidValueTypeException{value.type(), {QJsonValue::Double, QJsonValue::String}};
 }
 
-QCborValue SerializableDateTime::toCbor(const QtJson::CommonConfiguration &config) const
+QCborValue SerializableDateTime::toCbor(const QtJson::Configuration &config) const
 {
 	if (config.dateAsTimeStamp)
 		return QCborValue{QCborKnownTags::UnixTime_t, toUTC().toSecsSinceEpoch()};
@@ -58,7 +58,7 @@ QCborValue SerializableDateTime::toCbor(const QtJson::CommonConfiguration &confi
 	}
 }
 
-void SerializableDateTime::assignCbor(const QCborValue &value, const QtJson::CommonConfiguration &config)
+void SerializableDateTime::assignCbor(const QCborValue &value, const QtJson::Configuration &config)
 {
     Q_UNUSED(config);
     const auto xValue = __private::extract(value, nullptr, true);

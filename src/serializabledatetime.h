@@ -21,17 +21,17 @@ public:
 	SerializableDateTime &operator=(const QDateTime &other);
 	SerializableDateTime &operator=(QDateTime &&other) noexcept;
 
-    QJsonValue toJson(const CommonConfiguration &config = {}) const override;
-    void assignJson(const QJsonValue &value, const CommonConfiguration &config = {}) override;
-    QCborValue toCbor(const CommonConfiguration &config = {}) const override;
-    void assignCbor(const QCborValue &value, const CommonConfiguration &config = {}) override;
+    QJsonValue toJson(const Configuration &config = {}) const override;
+    void assignJson(const QJsonValue &value, const Configuration &config = {}) override;
+    QCborValue toCbor(const Configuration &config = {}) const override;
+    void assignCbor(const QCborValue &value, const Configuration &config = {}) override;
 
-    inline static SerializableDateTime fromJson(const QJsonValue &value, const CommonConfiguration &config = {}) {
+    inline static SerializableDateTime fromJson(const QJsonValue &value, const Configuration &config = {}) {
 		SerializableDateTime data;
 		data.assignJson(value, config);
 		return data;
 	}
-    inline static SerializableDateTime fromCbor(const QCborValue &value, const CommonConfiguration &config = {}) {
+    inline static SerializableDateTime fromCbor(const QCborValue &value, const Configuration &config = {}) {
 		SerializableDateTime data;
 		data.assignCbor(value, config);
 		return data;

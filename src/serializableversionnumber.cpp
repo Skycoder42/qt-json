@@ -23,7 +23,7 @@ SerializableVersionNumber &SerializableVersionNumber::operator=(QVersionNumber &
     return *this;
 }
 
-QJsonValue SerializableVersionNumber::toJson(const QtJson::CommonConfiguration &config) const
+QJsonValue SerializableVersionNumber::toJson(const QtJson::Configuration &config) const
 {
     if (config.versionAsString)
         return toString();
@@ -31,7 +31,7 @@ QJsonValue SerializableVersionNumber::toJson(const QtJson::CommonConfiguration &
         return SerializableVector<int>{segments()}.toJson(config);
 }
 
-void SerializableVersionNumber::assignJson(const QJsonValue &value, const QtJson::CommonConfiguration &config)
+void SerializableVersionNumber::assignJson(const QJsonValue &value, const QtJson::Configuration &config)
 {
     if (value.isString())
         operator=(fromString(value.toString()));
@@ -39,7 +39,7 @@ void SerializableVersionNumber::assignJson(const QJsonValue &value, const QtJson
         operator=(QVersionNumber{SerializableVector<int>::fromJson(value, config)});
 }
 
-QCborValue SerializableVersionNumber::toCbor(const QtJson::CommonConfiguration &config) const
+QCborValue SerializableVersionNumber::toCbor(const QtJson::Configuration &config) const
 {
     if (config.versionAsString)
         return toString();
@@ -47,7 +47,7 @@ QCborValue SerializableVersionNumber::toCbor(const QtJson::CommonConfiguration &
         return SerializableVector<int>{segments()}.toCbor(config);
 }
 
-void SerializableVersionNumber::assignCbor(const QCborValue &value, const QtJson::CommonConfiguration &config)
+void SerializableVersionNumber::assignCbor(const QCborValue &value, const QtJson::Configuration &config)
 {
     if (value.isString())
         operator=(fromString(value.toString()));

@@ -13,20 +13,20 @@ protected:
 	void setupDeserData() const override;
 
 private:
-	inline CommonConfiguration ce(bool enumAsString) const {
-		CommonConfiguration config;
+	inline Configuration ce(bool enumAsString) const {
+		Configuration config;
 		config.enumAsString = enumAsString;
 		return config;
 	}
 
-	inline CommonConfiguration cs(bool ignoreStored) const {
-		CommonConfiguration config;
+	inline Configuration cs(bool ignoreStored) const {
+		Configuration config;
 		config.ignoreStored = ignoreStored;
 		return config;
 	}
 
-	inline CommonConfiguration cv(ValidationFlags flags) const {
-		CommonConfiguration config;
+	inline Configuration cv(ValidationFlags flags) const {
+		Configuration config;
 		config.validation = flags;
 		return config;
 	}
@@ -93,7 +93,7 @@ private:
 
 void GadgetTest::setupData() const
 {
-	QTest::addRow("default") << CommonConfiguration{}
+	QTest::addRow("default") << Configuration{}
 							 << d()
 							 << gj()
 							 << gc()
@@ -107,7 +107,7 @@ void GadgetTest::setupData() const
 	filled.prop6.value = 6.6;
 	filled.prop7 = TestGadget::Flag::Flag1 | TestGadget::Flag::Flag2;
 	filled.prop8 = TestGadget::Enum::Value3;
-	QTest::addRow("filled") << CommonConfiguration{}
+	QTest::addRow("filled") << Configuration{}
 							<< d(filled)
 							<< QJsonValue{QJsonObject{
 								   {QStringLiteral("prop1"), 11},
@@ -180,12 +180,12 @@ void GadgetTest::setupDeserData() const
 											  << gc({{QStringLiteral("prop2"), 32}})
 											  << true;
 
-	QTest::addRow("invalid.data") << CommonConfiguration{}
+	QTest::addRow("invalid.data") << Configuration{}
 								  << d()
 								  << QJsonValue{42}
 								  << QCborValue{42}
 								  << true;
-	QTest::addRow("invalid.enum.type") << CommonConfiguration{}
+	QTest::addRow("invalid.enum.type") << Configuration{}
 									   << d()
 									   << gj({
 											  {QStringLiteral("prop7"), true}
@@ -194,7 +194,7 @@ void GadgetTest::setupDeserData() const
 											  {QStringLiteral("prop7"), true}
 										  })
 									   << true;
-	QTest::addRow("invalid.enum.strng") << CommonConfiguration{}
+	QTest::addRow("invalid.enum.strng") << Configuration{}
 										<< d()
 										<< gj({
 											   {QStringLiteral("prop7"), QStringLiteral("invalid")}
@@ -203,7 +203,7 @@ void GadgetTest::setupDeserData() const
 											   {QStringLiteral("prop7"), QStringLiteral("invalid")}
 										   })
 										<< true;
-	QTest::addRow("invalid.value") << CommonConfiguration{}
+	QTest::addRow("invalid.value") << Configuration{}
 								   << d()
 								   << gj({
 										  {QStringLiteral("prop1"), QStringLiteral("test")}

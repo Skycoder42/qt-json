@@ -63,75 +63,75 @@ private:
 
 void ArrayTest::setupData() const
 {
-	QTest::addRow("list.filled") << CommonConfiguration{}
+	QTest::addRow("list.filled") << Configuration{}
 								 << dl(1, 2, 3)
 								 << QJsonValue{QJsonArray{1, 2, 3}}
 								 << QCborValue{HomogeneousArrayTag, QCborArray{1, 2, 3}}
 								 << false;
-	QTest::addRow("list.empty") << CommonConfiguration{}
+	QTest::addRow("list.empty") << Configuration{}
 								<< dl()
 								<< QJsonValue{QJsonArray{}}
 								<< QCborValue{HomogeneousArrayTag, QCborArray{}}
 								<< false;
 
-	QTest::addRow("vector.filled") << CommonConfiguration{}
+	QTest::addRow("vector.filled") << Configuration{}
 								   << dv(1, 2, 3)
 								   << QJsonValue{QJsonArray{1, 2, 3}}
 								   << QCborValue{HomogeneousArrayTag, QCborArray{1, 2, 3}}
 								   << false;
-	QTest::addRow("vector.empty") << CommonConfiguration{}
+	QTest::addRow("vector.empty") << Configuration{}
 								  << dv()
 								  << QJsonValue{QJsonArray{}}
 								  << QCborValue{HomogeneousArrayTag, QCborArray{}}
 								  << false;
 
 #ifndef QT_NO_LINKED_LIST
-	QTest::addRow("linkedlist.filled") << CommonConfiguration{}
+	QTest::addRow("linkedlist.filled") << Configuration{}
 									   << dll(1, 2, 3)
 									   << QJsonValue{QJsonArray{1, 2, 3}}
 									   << QCborValue{HomogeneousArrayTag, QCborArray{1, 2, 3}}
 									   << false;
-	QTest::addRow("linkedlist.empty") << CommonConfiguration{}
+	QTest::addRow("linkedlist.empty") << Configuration{}
 									  << dll()
 									  << QJsonValue{QJsonArray{}}
 									  << QCborValue{HomogeneousArrayTag, QCborArray{}}
 									  << false;
 #endif
 
-	QTest::addRow("queue.filled") << CommonConfiguration{}
+	QTest::addRow("queue.filled") << Configuration{}
 								  << dq(1, 2, 3)
 								  << QJsonValue{QJsonArray{1, 2, 3}}
 								  << QCborValue{HomogeneousArrayTag, QCborArray{1, 2, 3}}
 								  << false;
-	QTest::addRow("queue.empty") << CommonConfiguration{}
+	QTest::addRow("queue.empty") << Configuration{}
 								 << dq()
 								 << QJsonValue{QJsonArray{}}
 								 << QCborValue{HomogeneousArrayTag, QCborArray{}}
 								 << false;
 
-	QTest::addRow("stack.filled") << CommonConfiguration{}
+	QTest::addRow("stack.filled") << Configuration{}
 								  << ds(1, 2, 3)
 								  << QJsonValue{QJsonArray{1, 2, 3}}
 								  << QCborValue{HomogeneousArrayTag, QCborArray{1, 2, 3}}
 								  << false;
-	QTest::addRow("stack.empty") << CommonConfiguration{}
+	QTest::addRow("stack.empty") << Configuration{}
 								 << ds()
 								 << QJsonValue{QJsonArray{}}
 								 << QCborValue{HomogeneousArrayTag, QCborArray{}}
 								 << false;
 
-	QTest::addRow("set.empty") << CommonConfiguration{}
+	QTest::addRow("set.empty") << Configuration{}
 							   << dhs()
 							   << QJsonValue{QJsonArray{}}
 							   << QCborValue{FiniteSetTag, QCborArray{}}
 							   << false;
 
-	QTest::addRow("list.serializable.filled") << CommonConfiguration{}
+	QTest::addRow("list.serializable.filled") << Configuration{}
 											  << dls(1.1, 2.2, 3.3)
 											  << QJsonValue{QJsonArray{1.1, 2.2, 3.3}}
 											  << QCborValue{HomogeneousArrayTag, QCborArray{1.1, 2.2, 3.3}}
 											  << false;
-	QTest::addRow("list.serializable.empty") << CommonConfiguration{}
+	QTest::addRow("list.serializable.empty") << Configuration{}
 											 << dls()
 											 << QJsonValue{QJsonArray{}}
 											 << QCborValue{HomogeneousArrayTag, QCborArray{}}
@@ -140,7 +140,7 @@ void ArrayTest::setupData() const
 
 void ArrayTest::setupSerData() const
 {
-	QTest::addRow("set.filled") << CommonConfiguration{}
+	QTest::addRow("set.filled") << Configuration{}
 								<< dhs(1)
 								<< QJsonValue{QJsonArray{1}}
 								<< QCborValue{FiniteSetTag, QCborArray{1}}
@@ -149,62 +149,62 @@ void ArrayTest::setupSerData() const
 
 void ArrayTest::setupDeserData() const
 {
-	QTest::addRow("set.filled") << CommonConfiguration{}
+	QTest::addRow("set.filled") << Configuration{}
 								<< dhs(1, 2, 3)
 								<< QJsonValue{QJsonArray{1, 2, 3}}
 								<< QCborValue{FiniteSetTag, QCborArray{1, 2, 3}}
 								<< false;
 
-	QTest::addRow("list.untagged") << CommonConfiguration{}
+	QTest::addRow("list.untagged") << Configuration{}
 								   << dl(1, 2, 3)
 								   << QJsonValue{QJsonValue::Undefined}
 								   << QCborValue{QCborArray{1, 2, 3}}
 								   << false;
 
-	QTest::addRow("vector.untagged") << CommonConfiguration{}
+	QTest::addRow("vector.untagged") << Configuration{}
 									 << dv(1, 2, 3)
 									 << QJsonValue{QJsonValue::Undefined}
 									 << QCborValue{QCborArray{1, 2, 3}}
 									 << false;
 
 #ifndef QT_NO_LINKED_LIST
-	QTest::addRow("linkedlist.untagged") << CommonConfiguration{}
+	QTest::addRow("linkedlist.untagged") << Configuration{}
 										 << dll(1, 2, 3)
 										 << QJsonValue{QJsonArray{1, 2, 3}}
 										 << QCborValue{QCborArray{1, 2, 3}}
 										 << false;
 #endif
 
-	QTest::addRow("queue.untagged") << CommonConfiguration{}
+	QTest::addRow("queue.untagged") << Configuration{}
 									<< dq(1, 2, 3)
 									<< QJsonValue{QJsonValue::Undefined}
 									<< QCborValue{QCborArray{1, 2, 3}}
 									<< false;
 
-	QTest::addRow("stack.untagged") << CommonConfiguration{}
+	QTest::addRow("stack.untagged") << Configuration{}
 									<< ds(1, 2, 3)
 									<< QJsonValue{QJsonValue::Undefined}
 									<< QCborValue{QCborArray{1, 2, 3}}
 									<< false;
 
-	QTest::addRow("set.untagged") << CommonConfiguration{}
+	QTest::addRow("set.untagged") << Configuration{}
 								  << dhs()
 								  << QJsonValue{QJsonValue::Undefined}
 								  << QCborValue{QCborArray{1, 2, 3}}
 								  << true;
 
-	QTest::addRow("list.serializable.untagged") << CommonConfiguration{}
+	QTest::addRow("list.serializable.untagged") << Configuration{}
 												<< dls(1.1, 2.2, 3.3)
 												<< QJsonValue{QJsonValue::Undefined}
 												<< QCborValue{QCborArray{1.1, 2.2, 3.3}}
 												<< false;
 
-	QTest::addRow("list.invalid") << CommonConfiguration{}
+	QTest::addRow("list.invalid") << Configuration{}
 								  << dl()
 								  << QJsonValue{QJsonValue::Undefined}
 								  << QCborValue{42}
 								  << true;
-	QTest::addRow("set.invalid") << CommonConfiguration{}
+	QTest::addRow("set.invalid") << Configuration{}
 								  << dhs()
 								  << QJsonValue{QJsonValue::Undefined}
 								  << QCborValue{42}

@@ -1,5 +1,6 @@
 #include "serializablegadget.h"
-#include "qtjson_common_p.h"
+#include "serializablegadget_p.h"
+#include "qtjson_helpers.h"
 #include "qtjson_exception.h"
 #include "serializableadapter.h"
 #include <QtCore/QMetaProperty>
@@ -10,24 +11,24 @@
 using namespace QtJson;
 using namespace QtJson::__private;
 
-QJsonValue SerializableGadget::toJson(const CommonConfiguration &config) const
+QJsonValue SerializableGadget::toJson(const Configuration &config) const
 {
 	return serialize<QJsonValue>(config);
 }
 
-void SerializableGadget::assignJson(const QJsonValue &value, const CommonConfiguration &config)
+void SerializableGadget::assignJson(const QJsonValue &value, const Configuration &config)
 {
 	if (!value.isObject())
 		throw InvalidValueTypeException{value.type(), {QJsonValue::Object}};
 	deserialize<QJsonValue>(value.toObject(), config);
 }
 
-QCborValue SerializableGadget::toCbor(const CommonConfiguration &config) const
+QCborValue SerializableGadget::toCbor(const Configuration &config) const
 {
 	return serialize<QCborValue>(config);
 }
 
-void SerializableGadget::assignCbor(const QCborValue &value, const CommonConfiguration &config)
+void SerializableGadget::assignCbor(const QCborValue &value, const Configuration &config)
 {
 	if (!value.isMap())
 		throw InvalidValueTypeException{value.type(), {QCborValue::Map}};
@@ -60,7 +61,17 @@ ISerializable *SerializableGadget::asSerializable(const QMetaObject *mo, const Q
 }
 
 template<typename TValue>
-typename DataValueInfo<TValue>::Map SerializableGadget::serialize(const CommonConfiguration &config) const
+TValue SerializableGadget::findInfo(const QMetaObject *metaObject, const char *key, const TValue &defaultValue) const
+{
+    const auto cIdx = metaObject->indexOfClassInfo(key);
+    if (cIdx < 0)
+        return defaultValue;
+    else
+        return QVariant{QString::fromUtf8(metaObject->classInfo(cIdx).value())}.template value<TValue>();
+}
+
+template<typename TValue>
+typename DataValueInfo<TValue>::Map SerializableGadget::serialize(const Configuration &config) const
 {
 	const auto metaObject = getMetaObject();
 	const auto offset = findInfo<int>(metaObject, QTJSON_PROPERTY_OFFSET_KEY, 0);
@@ -100,7 +111,7 @@ typename DataValueInfo<TValue>::Map SerializableGadget::serialize(const CommonCo
 }
 
 template<typename TValue>
-void SerializableGadget::deserialize(const typename DataValueInfo<TValue>::Map &map, const CommonConfiguration &config)
+void SerializableGadget::deserialize(const typename DataValueInfo<TValue>::Map &map, const Configuration &config)
 {
 	const auto metaObject = getMetaObject();
 	const auto offset = findInfo<int>(metaObject, QTJSON_PROPERTY_OFFSET_KEY, 0);

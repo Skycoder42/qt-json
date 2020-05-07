@@ -3,7 +3,7 @@
 #include "iserializable.h"
 #include "serializableadapter.h"
 #include "qtjson_exception.h"
-#include "qtjson_common_p.h"
+#include "qtjson_helpers.h"
 
 #include <QtCore/QtContainerFwd>
 #include <QtCore/QJsonObject>
@@ -43,7 +43,7 @@ public:
 		return *this;
 	}
 
-	QJsonValue toJson(const CommonConfiguration &config) const override {
+	QJsonValue toJson(const Configuration &config) const override {
 		QJsonObject object;
 		for (auto it = this->begin(), end = this->end(); it != end; ++it) {
 			object.insert(QVariant::fromValue(it.key()).toString(),
@@ -52,7 +52,7 @@ public:
 		return object;
 	}
 
-	void assignJson(const QJsonValue &value, const CommonConfiguration &config) override {
+	void assignJson(const QJsonValue &value, const Configuration &config) override {
         if (!value.isObject())
             throw InvalidValueTypeException{value.type(), {QJsonValue::Object}};
 		const auto object = value.toObject();
@@ -62,7 +62,7 @@ public:
 		}
 	}
 
-	QCborValue toCbor(const CommonConfiguration &config) const override {
+	QCborValue toCbor(const Configuration &config) const override {
 		QCborMap map;
 		for (auto it = this->begin(), end = this->end(); it != end; ++it) {
 			map.insert(SerializableAdapter<TKey>::toCbor(it.key(), config),
@@ -71,7 +71,7 @@ public:
         return {MapTypeTag, map};
 	}
 
-	void assignCbor(const QCborValue &value, const CommonConfiguration &config) override {
+	void assignCbor(const QCborValue &value, const Configuration &config) override {
 		const auto xValue = __private::extract(value);
         if (!xValue.isMap())
             throw InvalidValueTypeException{value.type(), {QCborValue::Map}};
@@ -82,13 +82,13 @@ public:
 		}
 	}
 
-	inline static SerializableDictionary fromJson(const QJsonValue &value, const CommonConfiguration &config) {
+	inline static SerializableDictionary fromJson(const QJsonValue &value, const Configuration &config) {
 		SerializableDictionary data;
 		data.assignJson(value, config);
 		return data;
 	}
 
-	inline static SerializableDictionary fromCbor(const QCborValue &value, const CommonConfiguration &config) {
+	inline static SerializableDictionary fromCbor(const QCborValue &value, const Configuration &config) {
 		SerializableDictionary data;
 		data.assignCbor(value, config);
 		return data;

@@ -39,7 +39,7 @@ QByteArray SerializationTestBase::stringify(const QJsonValue &value) const
 
 void SerializationTestBase::testSerialization_data()
 {
-	QTest::addColumn<QtJson::CommonConfiguration>("config");
+	QTest::addColumn<QtJson::Configuration>("config");
 	QTest::addColumn<ConstSerPtr>("data");
 	QTest::addColumn<QJsonValue>("json");
 	QTest::addColumn<QCborValue>("cbor");
@@ -51,7 +51,7 @@ void SerializationTestBase::testSerialization_data()
 
 void SerializationTestBase::testSerialization()
 {
-	QFETCH(QtJson::CommonConfiguration, config);
+	QFETCH(QtJson::Configuration, config);
 	QFETCH(ConstSerPtr, data);
 	QFETCH(QJsonValue, json);
 	QFETCH(QCborValue, cbor);
@@ -76,7 +76,7 @@ void SerializationTestBase::testSerialization()
 
 void SerializationTestBase::testDeserialization_data()
 {
-	QTest::addColumn<QtJson::CommonConfiguration>("config");
+	QTest::addColumn<QtJson::Configuration>("config");
 	QTest::addColumn<ConstSerPtr>("data");
 	QTest::addColumn<QJsonValue>("json");
 	QTest::addColumn<QCborValue>("cbor");
@@ -88,7 +88,7 @@ void SerializationTestBase::testDeserialization_data()
 
 void SerializationTestBase::testDeserialization()
 {
-	QFETCH(QtJson::CommonConfiguration, config);
+	QFETCH(QtJson::Configuration, config);
 	QFETCH(ConstSerPtr, data);
 	QFETCH(QJsonValue, json);
 	QFETCH(QCborValue, cbor);

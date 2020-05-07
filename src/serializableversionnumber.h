@@ -21,17 +21,17 @@ public:
 	SerializableVersionNumber &operator=(const QVersionNumber &other);
 	SerializableVersionNumber &operator=(QVersionNumber &&other) noexcept;
 
-	QJsonValue toJson(const CommonConfiguration &config = {}) const override;
-	void assignJson(const QJsonValue &value, const CommonConfiguration &config = {}) override;
-	QCborValue toCbor(const CommonConfiguration &config = {}) const override;
-	void assignCbor(const QCborValue &value, const CommonConfiguration &config = {}) override;
+	QJsonValue toJson(const Configuration &config = {}) const override;
+	void assignJson(const QJsonValue &value, const Configuration &config = {}) override;
+	QCborValue toCbor(const Configuration &config = {}) const override;
+	void assignCbor(const QCborValue &value, const Configuration &config = {}) override;
 
-	inline static SerializableVersionNumber fromJson(const QJsonValue &value, const CommonConfiguration &config = {}) {
+	inline static SerializableVersionNumber fromJson(const QJsonValue &value, const Configuration &config = {}) {
 		SerializableVersionNumber data;
 		data.assignJson(value, config);
 		return data;
 	}
-	inline static SerializableVersionNumber fromCbor(const QCborValue &value, const CommonConfiguration &config = {}) {
+	inline static SerializableVersionNumber fromCbor(const QCborValue &value, const Configuration &config = {}) {
 		SerializableVersionNumber data;
 		data.assignCbor(value, config);
 		return data;

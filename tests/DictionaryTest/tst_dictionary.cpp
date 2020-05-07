@@ -38,7 +38,7 @@ private:
 
 void DictionaryTest::setupData() const
 {
-	QTest::addRow("map.filled") << CommonConfiguration{}
+	QTest::addRow("map.filled") << Configuration{}
 								<< dm(std::make_pair(QStringLiteral("a"), 1),
 									  std::make_pair(QStringLiteral("b"), 2),
 									  std::make_pair(QStringLiteral("c"), 3))
@@ -53,19 +53,19 @@ void DictionaryTest::setupData() const
 									   {QStringLiteral("c"), 3}
 								   }}
 								<< false;
-	QTest::addRow("map.empty") << CommonConfiguration{}
+	QTest::addRow("map.empty") << Configuration{}
 							   << dm()
 							   << QJsonValue{QJsonObject{}}
 							   << QCborValue{MapTypeTag, QCborMap{}}
 							   << false;
 
-	QTest::addRow("hash.empty") << CommonConfiguration{}
+	QTest::addRow("hash.empty") << Configuration{}
 								<< dh()
 								<< QJsonValue{QJsonObject{}}
 								<< QCborValue{MapTypeTag, QCborMap{}}
 								<< false;
 
-	QTest::addRow("map.keyed.filled") << CommonConfiguration{}
+	QTest::addRow("map.keyed.filled") << Configuration{}
 									  << dmk(std::make_pair(1.1, true),
 											 std::make_pair(2.2, false),
 											 std::make_pair(3.3, true))
@@ -80,13 +80,13 @@ void DictionaryTest::setupData() const
 											 {3.3, true}
 										 }}
 									  << false;
-	QTest::addRow("map.keyed.empty") << CommonConfiguration{}
+	QTest::addRow("map.keyed.empty") << Configuration{}
 									 << dmk()
 									 << QJsonValue{QJsonObject{}}
 									 << QCborValue{MapTypeTag, QCborMap{}}
 									 << false;
 
-	QTest::addRow("map.serializable.filled") << CommonConfiguration{}
+	QTest::addRow("map.serializable.filled") << Configuration{}
 											 << dms(std::make_pair(1, TestSerializable{1.1}),
 													std::make_pair(2, TestSerializable{2.2}),
 													std::make_pair(3, TestSerializable{3.3}))
@@ -101,7 +101,7 @@ void DictionaryTest::setupData() const
 													{3, 3.3}
 												}}
 											 << false;
-	QTest::addRow("map.serializable.empty") << CommonConfiguration{}
+	QTest::addRow("map.serializable.empty") << Configuration{}
 											<< dms()
 											<< QJsonValue{QJsonObject{}}
 											<< QCborValue{MapTypeTag, QCborMap{}}
@@ -110,7 +110,7 @@ void DictionaryTest::setupData() const
 
 void DictionaryTest::setupSerData() const
 {
-	QTest::addRow("hash.filled.json") << CommonConfiguration{}
+	QTest::addRow("hash.filled.json") << Configuration{}
 									  << dh(std::make_pair(QStringLiteral("a"), 1),
 											std::make_pair(QStringLiteral("b"), 2),
 											std::make_pair(QStringLiteral("c"), 3))
@@ -121,7 +121,7 @@ void DictionaryTest::setupSerData() const
 										 }}
 									  << QCborValue{QCborValue::Invalid}
 									  << false;
-	QTest::addRow("hash.filled.cbor") << CommonConfiguration{}
+	QTest::addRow("hash.filled.cbor") << Configuration{}
 									  << dh(std::make_pair(QStringLiteral("a"), 1))
 									  << QJsonValue{QJsonValue::Undefined}
 									  << QCborValue{MapTypeTag, QCborMap{{QStringLiteral("a"), 1}}}
@@ -130,7 +130,7 @@ void DictionaryTest::setupSerData() const
 
 void DictionaryTest::setupDeserData() const
 {
-	QTest::addRow("hash.filled") << CommonConfiguration{}
+	QTest::addRow("hash.filled") << Configuration{}
 								 << dh(std::make_pair(QStringLiteral("a"), 1),
 									   std::make_pair(QStringLiteral("b"), 2),
 									   std::make_pair(QStringLiteral("c"), 3))
@@ -146,7 +146,7 @@ void DictionaryTest::setupDeserData() const
 									}}
 								 << false;
 
-	QTest::addRow("map.untagged") << CommonConfiguration{}
+	QTest::addRow("map.untagged") << Configuration{}
 								  << dm(std::make_pair(QStringLiteral("a"), 1),
 										std::make_pair(QStringLiteral("b"), 2),
 										std::make_pair(QStringLiteral("c"), 3))
@@ -158,7 +158,7 @@ void DictionaryTest::setupDeserData() const
 									 }}
 								  << false;
 
-	QTest::addRow("hash.untagged") << CommonConfiguration{}
+	QTest::addRow("hash.untagged") << Configuration{}
 								   << dh(std::make_pair(QStringLiteral("a"), 1),
 										 std::make_pair(QStringLiteral("b"), 2),
 										 std::make_pair(QStringLiteral("c"), 3))
@@ -170,7 +170,7 @@ void DictionaryTest::setupDeserData() const
 									  }}
 								   << false;
 
-	QTest::addRow("invalid") << CommonConfiguration{}
+	QTest::addRow("invalid") << Configuration{}
 							 << dm()
 							 << QJsonValue{42}
 							 << QCborValue{42}
