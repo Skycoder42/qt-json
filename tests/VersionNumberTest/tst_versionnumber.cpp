@@ -10,6 +10,7 @@ class VersionNumberTest : public SerializationTest<SerializableVersionNumber>
 
 protected:
 	void setupData() const override;
+    void setupDeserData() const override;
 
 private:
 	template <typename... TArgs>
@@ -21,7 +22,7 @@ private:
 		CommonConfiguration config;
 		config.versionAsString = versionAsString;
 		return config;
-	}
+    }
 };
 
 void VersionNumberTest::setupData() const
@@ -35,7 +36,16 @@ void VersionNumberTest::setupData() const
 						   << ds(1, 2, 3)
 						   << QJsonValue{QJsonArray{1, 2, 3}}
 						   << QCborValue{HomogeneousArrayTag, QCborArray{1, 2, 3}}
-						   << false;
+                           << false;
+}
+
+void VersionNumberTest::setupDeserData() const
+{
+    QTest::addRow("invalid") << c(true)
+                             << ds()
+                             << QJsonValue{12}
+                             << QCborValue{12}
+                             << true;
 }
 
 QTEST_APPLESS_MAIN(VersionNumberTest)
