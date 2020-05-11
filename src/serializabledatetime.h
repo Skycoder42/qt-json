@@ -9,7 +9,6 @@ namespace QtJson {
 class QTJSON_EXPORT SerializableDateTime : public QDateTime, public ISerializable
 {
 public:
-	using QDateTime::QDateTime;
     SerializableDateTime() = default;
 	SerializableDateTime(const SerializableDateTime &) = default;
 	SerializableDateTime(SerializableDateTime &&) noexcept = default;
@@ -25,6 +24,11 @@ public:
     void assignJson(const QJsonValue &value, const Configuration &config = {}) override;
     QCborValue toCbor(const Configuration &config = {}) const override;
     void assignCbor(const QCborValue &value, const Configuration &config = {}) override;
+
+    template <typename... TArgs>
+    inline SerializableDateTime &emplace(TArgs&&... args) {
+        return operator=(QDateTime{std::forward<TArgs>(args)...});
+    }
 
     inline static SerializableDateTime fromJson(const QJsonValue &value, const Configuration &config = {}) {
 		SerializableDateTime data;

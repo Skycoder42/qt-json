@@ -12,6 +12,9 @@ protected:
 	void setupSerData() const override;
 	void setupDeserData() const override;
 
+private Q_SLOTS:
+    void testConstructors();
+
 private:
 	inline ConstSerPtr dd(const QDateTime &data) const {
 		return d(data);
@@ -116,7 +119,37 @@ void DateTimeTest::setupDeserData() const
 							 << dd({})
 							 << QJsonValue{true}
 							 << QCborValue{QStringLiteral("2020-10-10T17:24:30.123Z")}
-							 << true;
+                             << true;
+}
+
+void DateTimeTest::testConstructors()
+{
+    QDateTime dt;
+    SerializableDateTime sdt;
+
+    SerializableDateTime test;
+
+    SerializableDateTime {dt};
+    SerializableDateTime {std::move(dt)};
+    test = dt;
+    test = std::move(dt);
+
+    SerializableDateTime {sdt};
+    SerializableDateTime {std::move(sdt)};
+    test = sdt;
+    test = std::move(sdt);
+
+    test.emplace(QDate{});
+    test.emplace(QDate{}, QTime{});
+    test.emplace(QDate{}, QTime{}, Qt::UTC);
+    test.emplace(QDate{}, QTime{}, Qt::UTC, 42);
+    test.emplace(QDate{}, QTime{}, QTimeZone{});
+
+    test = QDateTime{QDate{}};
+    test = QDateTime{QDate{}, QTime{}};
+    test = QDateTime{QDate{}, QTime{}, Qt::UTC};
+    test = QDateTime{QDate{}, QTime{}, Qt::UTC, 42};
+    test = QDateTime{QDate{}, QTime{}, QTimeZone{}};
 }
 
 QTEST_APPLESS_MAIN(DateTimeTest)
