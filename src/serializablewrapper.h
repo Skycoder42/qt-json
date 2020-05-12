@@ -45,49 +45,51 @@ struct SerializableWrapper<QDateTime> {
 
 template <typename T>
 struct SerializableWrapper<QList<T>> {
-	using type = SerializableList<T>;
+	using type = SerializableList<typename SerializableWrapper<T>::type>;
 };
 
 template <typename T>
 struct SerializableWrapper<QVector<T>> {
-	using type = SerializableVector<T>;
+	using type = SerializableVector<typename SerializableWrapper<T>::type>;
 };
 
 #ifndef QT_NO_LINKED_LIST
 template <typename T>
 struct SerializableWrapper<QLinkedList<T>> {
-	using type = SerializableLinkedList<T>;
+	using type = SerializableLinkedList<typename SerializableWrapper<T>::type>;
 };
 #endif
 
 template <typename T>
 struct SerializableWrapper<QQueue<T>> {
-	using type = SerializableQueue<T>;
+	using type = SerializableQueue<typename SerializableWrapper<T>::type>;
 };
 
 template <typename T>
 struct SerializableWrapper<QStack<T>> {
-	using type = SerializableStack<T>;
+	using type = SerializableStack<typename SerializableWrapper<T>::type>;
 };
 
 template <typename T>
 struct SerializableWrapper<QSet<T>> {
-	using type = SerializableSet<T>;
+	using type = SerializableSet<typename SerializableWrapper<T>::type>;
 };
 
 template <typename TKey, typename TValue>
 struct SerializableWrapper<QHash<TKey, TValue>> {
-	using type = SerializableHash<TKey, TValue>;
+	using type = SerializableHash<typename SerializableWrapper<TKey>::type,
+								  typename SerializableWrapper<TValue>::type>;
 };
 
 template <typename TKey, typename TValue>
 struct SerializableWrapper<QMap<TKey, TValue>> {
-	using type = SerializableMap<TKey, TValue>;
+	using type = SerializableMap<typename SerializableWrapper<TKey>::type,
+								 typename SerializableWrapper<TValue>::type>;
 };
 
 template <typename T>
 struct SerializableWrapper<std::optional<T>> {
-	using type = SerializableOptional<T>;
+	using type = SerializableOptional<typename SerializableWrapper<T>::type>;
 };
 
 template <>
