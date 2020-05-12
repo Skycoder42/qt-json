@@ -1,7 +1,7 @@
 #pragma once
 
 #include "iserializable.h"
-#include "serializablewrapper.h"
+#include "serializableadapter.h"
 
 #include <type_traits>
 
@@ -10,6 +10,13 @@
 namespace QtJson {
 
 namespace __private {
+
+enum class AdapterMethod {
+	ToJson,
+	FromJson,
+	ToCbor,
+	FromCbor
+};
 
 template <typename TType>
 struct DataValueInfo;
@@ -33,9 +40,12 @@ private:
 	static QByteArray serializablePropInfoName(const QMetaProperty &property);
 	ISerializable *asSerializable(const QMetaObject *mo,
 								  const QMetaProperty &property) const;
+	std::optional<QMetaMethod> findMethod(const QMetaObject *mo,
+										  const QMetaProperty &property,
+										  __private::AdapterMethod method) const;
 
-    template <typename TValue>
-    TValue findInfo(const QMetaObject *metaObject, const char *key, const TValue &defaultValue) const;
+	template <typename TValue>
+	TValue findInfo(const QMetaObject *metaObject, const char *key, const TValue &defaultValue) const;
 	template <typename TValue>
 	typename __private::DataValueInfo<TValue>::Map serialize(const Configuration &config) const;
 	template <typename TValue>
@@ -50,13 +60,13 @@ private:
 #define QTJSON_SERIALIZABLE_GADGET(Type) \
 	QTJSON_SERIALIZABLE \
 	public: \
-        static Type fromJson(const QJsonValue &value, const QtJson::Configuration &config = {}) { \
+		static Type fromJson(const QJsonValue &value, const QtJson::Configuration &config = {}) { \
 			Type _instance; \
 			_instance.assignJson(value, config); \
 			return _instance; \
 		} \
 		\
-        static Type fromCbor(const QCborValue &value, const QtJson::Configuration &config = {}) { \
+		static Type fromCbor(const QCborValue &value, const QtJson::Configuration &config = {}) { \
 			Type _instance; \
 			_instance.assignCbor(value, config); \
 			return _instance; \
@@ -72,19 +82,29 @@ private:
 #define QTJSON_PROPERTY_OFFSET_KEY "__qtjson_offset"
 #define QTJSON_PROPERTY_OFFSET(offset) Q_CLASSINFO(QTJSON_PROPERTY_OFFSET_KEY, #offset)
 
-#define QTJSON_SERIALIZABLE_PROP_KEY_STR "__qtjson_propcast_"
-#define QTJSON_SERIALIZABLE_PROP_KEY(name) (QTJSON_SERIALIZABLE_PROP_KEY_STR #name)
-#define QTJSON_SERIALIZABLE_PROP(name, member, ...) \
-	Q_INVOKABLE inline QtJson::ISerializable *__qtjson_propcast_ ## name() { \
-		return QtJson::SerializableCast<__VA_ARGS__>::cast(&(this->member)); \
+#define QTJSON_SERIALIZABLE_PROP(name, get, set, ...) \
+	Q_INVOKABLE inline QJsonValue __qtjson_ ## name ## _toJson(const QtJson::Configuration &config) const { \
+		return QtJson::SerializableAdapter<__VA_ARGS>::toJson(get(), config); \
+	} \
+	Q_INVOKABLE inline void __qtjson_ ## name ## _fromJson(const QJsonValue &value, const QtJson::Configuration &config) { \
+		set(QtJson::SerializableAdapter<__VA_ARGS>::fromJson(value, config)); \
+	} \
+	Q_INVOKABLE inline QCborValue __qtjson_ ## name ## _toCbor(const QtJson::Configuration &config) const { \
+		return QtJson::SerializableAdapter<__VA_ARGS>::toCbor(get(), config); \
+	} \
+	Q_INVOKABLE inline void __qtjson_ ## name ## _fromCbor(const QCborValue &value, const QtJson::Configuration &config) { \
+		set(QtJson::SerializableAdapter<__VA_ARGS>::fromCbor(value, config)); \
 	}
 
-#define QTJSON_PROP_MEMBER(name, ...) \
-	private: \
-		QTJSON_SERIALIZABLE_PROP(name, name, typename QtJson::SerializableWrapper<__VA_ARGS__>::type) \
-	public: \
-		typename QtJson::SerializableWrapper<__VA_ARGS__>::type name
+#define QTJSON_SERIALIZABLE_PROP_MEMBER(name, member, ...) \
+	QTJSON_SERIALIZABLE_PROP(name, \
+							 [this]() { return member; }, \
+							 [this](__VA_ARGS__ &&value) { member = std::move(value); }, \
+							 __VA_ARGS__)
 
 #define QTJSON_PROP(name, ...) \
-	Q_PROPERTY(__VA_ARGS__ name MEMBER name STORED true) \
-	QTJSON_PROP_MEMBER(name, __VA_ARGS__)
+	private: \
+		Q_PROPERTY(__VA_ARGS__ name MEMBER name STORED true) \
+		QTJSON_SERIALIZABLE_PROP_MEMBER(name, name, __VA_ARGS__) \
+	public: \
+		__VA_ARGS__ name

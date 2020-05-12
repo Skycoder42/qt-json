@@ -3,67 +3,46 @@
 #include "qtjson_helpers.h"
 using namespace QtJson;
 
-SerializableDateTime::SerializableDateTime(const QDateTime &other) :
-	QDateTime{other}
-{}
-
-SerializableDateTime::SerializableDateTime(QDateTime &&other) noexcept :
-	QDateTime{std::move(other)}
-{}
-
-SerializableDateTime &SerializableDateTime::operator=(const QDateTime &other)
-{
-	QDateTime::operator=(other);
-	return *this;
-}
-
-SerializableDateTime &SerializableDateTime::operator=(QDateTime &&other) noexcept
-{
-	QDateTime::operator=(std::move(other));
-	return *this;
-}
-
-QJsonValue SerializableDateTime::toJson(const QtJson::Configuration &config) const
+QJsonValue QtJson::SerializableAdapter<QDateTime, void>::toJson(const QDateTime &value, const Configuration &config)
 {
 	if (config.dateAsTimeStamp)
-		return toUTC().toSecsSinceEpoch();
+		return value.toUTC().toSecsSinceEpoch();
 	else {
-		if (timeSpec() == Qt::LocalTime)
-			return toOffsetFromUtc(offsetFromUtc()).toString(Qt::ISODateWithMs);
+		if (value.timeSpec() == Qt::LocalTime)
+			return value.toOffsetFromUtc(value.offsetFromUtc()).toString(Qt::ISODateWithMs);
 		else
-			return toString(Qt::ISODateWithMs);
+			return value.toString(Qt::ISODateWithMs);
 	}
 }
 
-void SerializableDateTime::assignJson(const QJsonValue &value, const QtJson::Configuration &config)
+QDateTime QtJson::SerializableAdapter<QDateTime, void>::fromJson(const QJsonValue &value, const Configuration &config)
 {
 	Q_UNUSED(config);
 	if (value.isDouble())
-		operator=(fromSecsSinceEpoch(value.toInt()));
+		return QDateTime::fromSecsSinceEpoch(value.toInt());
 	else if (value.isString())
-		operator=(fromString(value.toString(), Qt::ISODateWithMs));
-    else
-        throw InvalidValueTypeException{value.type(), {QJsonValue::Double, QJsonValue::String}};
+		return QDateTime::fromString(value.toString(), Qt::ISODateWithMs);
+	else
+		throw InvalidValueTypeException{value.type(), {QJsonValue::Double, QJsonValue::String}};
 }
 
-QCborValue SerializableDateTime::toCbor(const QtJson::Configuration &config) const
+QCborValue QtJson::SerializableAdapter<QDateTime, void>::toCbor(const QDateTime &value, const Configuration &config)
 {
 	if (config.dateAsTimeStamp)
-		return QCborValue{QCborKnownTags::UnixTime_t, toUTC().toSecsSinceEpoch()};
+		return QCborValue{QCborKnownTags::UnixTime_t, value.toUTC().toSecsSinceEpoch()};
 	else {
-		if (timeSpec() == Qt::LocalTime)
-			return QCborValue{toOffsetFromUtc(offsetFromUtc())};
+		if (value.timeSpec() == Qt::LocalTime)
+			return QCborValue{value.toOffsetFromUtc(value.offsetFromUtc())};
 		else
-			return QCborValue{*this};
+			return QCborValue{value};
 	}
 }
 
-void SerializableDateTime::assignCbor(const QCborValue &value, const QtJson::Configuration &config)
+QDateTime QtJson::SerializableAdapter<QDateTime, void>::fromCbor(const QCborValue &value, const Configuration &config)
 {
-    Q_UNUSED(config);
-    const auto xValue = __private::extract(value, nullptr, true);
-    if (!xValue.isDateTime())
-        throw InvalidValueTypeException{xValue.type(), {QCborValue::DateTime}};
-    operator=(__private::extract(value, nullptr, true).toDateTime());
+	Q_UNUSED(config);
+	const auto xValue = __private::extract(value, nullptr, true);
+	if (!xValue.isDateTime())
+		throw InvalidValueTypeException{xValue.type(), {QCborValue::DateTime}};
+	return __private::extract(value, nullptr, true).toDateTime();
 }
-

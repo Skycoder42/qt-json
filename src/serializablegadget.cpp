@@ -2,7 +2,6 @@
 #include "serializablegadget_p.h"
 #include "qtjson_helpers.h"
 #include "qtjson_exception.h"
-#include "serializableadapter.h"
 #include <QtCore/QMetaProperty>
 #include <QtCore/QMetaMethod>
 #include <QtCore/QJsonObject>
@@ -60,14 +59,42 @@ ISerializable *SerializableGadget::asSerializable(const QMetaObject *mo, const Q
 	return nullptr;
 }
 
+std::optional<QMetaMethod> SerializableGadget::findMethod(const QMetaObject *mo, const QMetaProperty &property, AdapterMethod method) const
+{
+	const QByteArray propName = property.name();
+	QByteArray rawMethodSignature;
+	switch (method) {
+	case AdapterMethod::ToJson:
+		rawMethodSignature = QTJSON_SERIALIZABLE_PROP_TO_JSON_SIGNATURE(propName);
+		break;
+	case AdapterMethod::FromJson:
+		rawMethodSignature = QTJSON_SERIALIZABLE_PROP_FROM_JSON_SIGNATURE(propName);
+		break;
+	case AdapterMethod::ToCbor:
+		rawMethodSignature = QTJSON_SERIALIZABLE_PROP_TO_CBOR_SIGNATURE(propName);
+		break;
+	case AdapterMethod::FromCbor:
+		rawMethodSignature = QTJSON_SERIALIZABLE_PROP_FROM_CBOR_SIGNATURE(propName);
+		break;
+	default:
+		Q_UNREACHABLE();
+	}
+
+	const auto mIdx = mo->indexOfMethod(QMetaObject::normalizedSignature(rawMethodSignature));
+	if (mIdx < 0)
+		return std::nullopt;
+	else
+		return mo->method(mIdx);
+}
+
 template<typename TValue>
 TValue SerializableGadget::findInfo(const QMetaObject *metaObject, const char *key, const TValue &defaultValue) const
 {
-    const auto cIdx = metaObject->indexOfClassInfo(key);
-    if (cIdx < 0)
-        return defaultValue;
-    else
-        return QVariant{QString::fromUtf8(metaObject->classInfo(cIdx).value())}.template value<TValue>();
+	const auto cIdx = metaObject->indexOfClassInfo(key);
+	if (cIdx < 0)
+		return defaultValue;
+	else
+		return QVariant{QString::fromUtf8(metaObject->classInfo(cIdx).value())}.template value<TValue>();
 }
 
 template<typename TValue>
@@ -82,11 +109,13 @@ typename DataValueInfo<TValue>::Map SerializableGadget::serialize(const Configur
 			continue;
 
 		typename DataValueInfo<TValue>::Value value {DataValueInfo<TValue>::Undefined};
-		if (const auto serializable = asSerializable(metaObject, property); serializable) {
-			if constexpr (std::is_same_v<TValue, QCborValue>)
-				value = serializable->toCbor(config);
-			else
-				value = serializable->toJson(config);
+		if (const auto method = findMethod(metaObject, property, DataValueInfo<TValue>::To); method) {
+			const auto ok = method->invokeOnGadget(const_cast<SerializableGadget*>(this),
+												   DataValueInfo<TValue>::returnArg(value),
+												   Q_ARG(QtJson::Configuration, config));
+			if (!ok) {
+				// TODO
+			}
 		} else {
 			auto variant = property.readOnGadget(this);
 			if (!variant.isValid())

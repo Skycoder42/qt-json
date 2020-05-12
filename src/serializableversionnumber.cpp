@@ -3,54 +3,34 @@
 #include "serializablearray.h"
 using namespace QtJson;
 
-SerializableVersionNumber::SerializableVersionNumber(const QVersionNumber &other) :
-    QVersionNumber{other}
-{}
-
-SerializableVersionNumber::SerializableVersionNumber(QVersionNumber &&other) noexcept :
-    QVersionNumber{std::move(other)}
-{}
-
-SerializableVersionNumber &SerializableVersionNumber::operator=(const QVersionNumber &other)
+QJsonValue QtJson::SerializableAdapter<QVersionNumber, void>::toJson(const QVersionNumber &value, const Configuration &config)
 {
-    QVersionNumber::operator=(other);
-    return *this;
+	if (config.versionAsString)
+		return value.toString();
+	else
+		return SerializableAdapter<QVector<int>>::toJson(value.segments(), config);
 }
 
-SerializableVersionNumber &SerializableVersionNumber::operator=(QVersionNumber &&other) noexcept
+QVersionNumber QtJson::SerializableAdapter<QVersionNumber, void>::fromJson(const QJsonValue &value, const Configuration &config)
 {
-    QVersionNumber::operator=(std::move(other));
-    return *this;
+	if (value.isString())
+		return QVersionNumber::fromString(value.toString());
+	else
+		return QVersionNumber{SerializableAdapter<QVector<int>>::fromJson(value, config)};
 }
 
-QJsonValue SerializableVersionNumber::toJson(const QtJson::Configuration &config) const
+QCborValue QtJson::SerializableAdapter<QVersionNumber, void>::toCbor(const QVersionNumber &value, const Configuration &config)
 {
-    if (config.versionAsString)
-        return toString();
-    else
-        return SerializableVector<int>{segments()}.toJson(config);
+	if (config.versionAsString)
+		return value.toString();
+	else
+		return SerializableAdapter<QVector<int>>::toCbor(value.segments(), config);
 }
 
-void SerializableVersionNumber::assignJson(const QJsonValue &value, const QtJson::Configuration &config)
+QVersionNumber QtJson::SerializableAdapter<QVersionNumber, void>::fromCbor(const QCborValue &value, const Configuration &config)
 {
-    if (value.isString())
-        operator=(fromString(value.toString()));
-    else
-        operator=(QVersionNumber{SerializableVector<int>::fromJson(value, config)});
-}
-
-QCborValue SerializableVersionNumber::toCbor(const QtJson::Configuration &config) const
-{
-    if (config.versionAsString)
-        return toString();
-    else
-        return SerializableVector<int>{segments()}.toCbor(config);
-}
-
-void SerializableVersionNumber::assignCbor(const QCborValue &value, const QtJson::Configuration &config)
-{
-    if (value.isString())
-        operator=(fromString(value.toString()));
-    else
-        operator=(QVersionNumber{SerializableVector<int>::fromCbor(value, config)});
+	if (value.isString())
+		return QVersionNumber::fromString(value.toString());
+	else
+		return QVersionNumber{SerializableAdapter<QVector<int>>::fromCbor(value, config)};
 }

@@ -1,44 +1,20 @@
 #pragma once
 
 #include "iserializable.h"
+#include "serializableadapter.h"
 
 #include <QtCore/QByteArray>
 
 namespace QtJson {
 
-class QTJSON_EXPORT SerializableByteArray : public QByteArray, public ISerializable
+template <>
+class QTJSON_EXPORT SerializableAdapter<QByteArray, void>
 {
 public:
-    using QByteArray::QByteArray;
-    SerializableByteArray() = default;
-	SerializableByteArray(const SerializableByteArray &) = default;
-	SerializableByteArray(SerializableByteArray &&) noexcept = default;
-	SerializableByteArray &operator=(const SerializableByteArray &) = default;
-    SerializableByteArray &operator=(SerializableByteArray &&) noexcept = default;
-
-	SerializableByteArray(const QByteArray &other);
-	SerializableByteArray(QByteArray &&other) noexcept;
-	SerializableByteArray &operator=(const QByteArray &other);
-	SerializableByteArray &operator=(QByteArray &&other) noexcept;
-
-    QJsonValue toJson(const Configuration &config = {}) const override;
-    void assignJson(const QJsonValue &value, const Configuration &config = {}) override;
-    QCborValue toCbor(const Configuration &config = {}) const override;
-    void assignCbor(const QCborValue &value, const Configuration &config = {}) override;
-
-    inline static SerializableByteArray fromJson(const QJsonValue &value, const Configuration &config = {}) {
-		SerializableByteArray data;
-		data.assignJson(value, config);
-		return data;
-	}
-    inline static SerializableByteArray fromCbor(const QCborValue &value, const Configuration &config = {}) {
-		SerializableByteArray data;
-		data.assignCbor(value, config);
-		return data;
-	}
+	static QJsonValue toJson(const QByteArray &value, const Configuration &config = {});
+	static QByteArray fromJson(const QJsonValue &value, const Configuration &config = {});
+	static QCborValue toCbor(const QByteArray &value, const Configuration &config = {});
+	static QByteArray fromCbor(const QCborValue &value, const Configuration &config = {});
 };
 
 }
-
-Q_DECLARE_METATYPE(QtJson::SerializableByteArray)
-Q_DECLARE_SHARED(QtJson::SerializableByteArray)

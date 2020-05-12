@@ -4,6 +4,7 @@
 #include "serializableadapter.h"
 #include "qtjson_exception.h"
 #include "qtjson_helpers.h"
+#include "serializablearray_p.h"
 
 #include <QtCore/QtContainerFwd>
 #include <QtCore/QJsonArray>
@@ -11,196 +12,97 @@
 
 namespace QtJson {
 
-namespace __private {
-
-template <typename, typename = void>
-struct has_reserve : public std::false_type {};
-
-template <typename T>
-struct has_reserve<T, std::void_t<decltype(std::declval<T>().reserve(0))>> : std::true_type {};
-
-template <typename T>
-inline constexpr bool has_reserve_v = has_reserve<T>::value;
-
-}
-
 // TODO move to enum
 constexpr QCborTag HomogeneousArrayTag = static_cast<QCborTag>(41);
 constexpr QCborTag FiniteSetTag = static_cast<QCborTag>(258);
 
-template <typename TValue, template <typename> class TList>
-class SerializableArray : public TList<TValue>, public ISerializable
+template <typename TValue, template <typename...> class TArray, typename... TExtra>
+class SerializableAdapter<TArray<TValue, TExtra...>, std::enable_if_t<__private::is_array_v<TArray>, void>>
 {
 public:
-	using TList<TValue>::TList;
-	SerializableArray(const SerializableArray &) = default;
-	SerializableArray(SerializableArray &&) noexcept = default;
-	SerializableArray &operator=(const SerializableArray &) = default;
-	SerializableArray &operator=(SerializableArray &&) noexcept = default;
+	using array_type = TArray<TValue, TExtra...>;
 
-	inline SerializableArray(const TList<TValue> &other) :
-		TList<TValue>{other}
-	{}
-
-	inline SerializableArray(TList<TValue> &&other) noexcept :
-		TList<TValue>{std::move(other)}
-	{}
-
-	inline SerializableArray &operator=(const TList<TValue> &other) {
-		TList<TValue>::operator=(other);
-		return *this;
-	}
-
-	inline SerializableArray &operator=(TList<TValue> &&other) noexcept {
-		TList<TValue>::operator=(std::move(other));
-		return *this;
-	}
-
-	QJsonValue toJson(const Configuration &config) const override {
+	static QJsonValue toJson(const array_type &value, const Configuration &config = {}) {
 		QJsonArray array;
-		for (const auto &value : qAsConst(*this))
-			array.push_back(SerializableAdapter<TValue>::toJson(value, config));
+		for (const auto &element : value)
+			array.push_back(SerializableAdapter<TValue>::toJson(element, config));
 		return array;
 	}
 
-	void assignJson(const QJsonValue &value, const Configuration &config) override {
+	static array_type fromJson(const QJsonValue &value, const Configuration &config = {}) {
 		if (!value.isArray())
 			throw InvalidValueTypeException{value.type(), {QJsonValue::Array}};
 		const auto array = value.toArray();
-		if constexpr (__private::has_reserve_v<TList<TValue>>)
-			this->reserve(array.size());
+		array_type result;
+		if constexpr (__private::has_reserve_v<array_type>)
+			result.reserve(array.size());
 		for (const auto &element : array)
-			this->append(SerializableAdapter<TValue>::fromJson(element, config));
+			result.append(SerializableAdapter<TValue>::fromJson(element, config));
+		return result;
 	}
 
-	QCborValue toCbor(const Configuration &config) const override {
+	static QCborValue toCbor(const array_type &value, const Configuration &config = {}) {
 		QCborArray array;
-		for (const auto &value : qAsConst(*this))
-			array.push_back(SerializableAdapter<TValue>::toCbor(value, config));
+		for (const auto &element : value)
+			array.push_back(SerializableAdapter<TValue>::toCbor(element, config));
 		return {HomogeneousArrayTag, array};
 	}
 
-	void assignCbor(const QCborValue &value, const Configuration &config) override {
+	static array_type fromCbor(const QCborValue &value, const Configuration &config = {}) {
 		const auto xValue = __private::extract(value);
 		if (!xValue.isArray())
 			throw InvalidValueTypeException{xValue.type(), {QCborValue::Array}};
 		const auto array = xValue.toArray();
-		if constexpr (__private::has_reserve_v<TList<TValue>>)
-			this->reserve(array.size());
+		array_type result;
+		if constexpr (__private::has_reserve_v<array_type>)
+			result.reserve(array.size());
 		for (const auto &element : array)
-			this->append(SerializableAdapter<TValue>::fromCbor(element, config));
-	}
-
-	inline static SerializableArray fromJson(const QJsonValue &value, const Configuration &config) {
-		SerializableArray data;
-		data.assignJson(value, config);
-		return data;
-	}
-
-	inline static SerializableArray fromCbor(const QCborValue &value, const Configuration &config) {
-		SerializableArray data;
-		data.assignCbor(value, config);
-		return data;
+			result.append(SerializableAdapter<TValue>::fromCbor(element, config));
+		return result;
 	}
 };
 
-
 template <typename TValue>
-class SerializableArray<TValue, QSet> : public QSet<TValue>, public ISerializable
+class SerializableAdapter<QSet<TValue>, void>
 {
 public:
-	using QSet<TValue>::QSet;
-	SerializableArray(const SerializableArray &) = default;
-	SerializableArray(SerializableArray &&) noexcept = default;
-	SerializableArray &operator=(const SerializableArray &) = default;
-	SerializableArray &operator=(SerializableArray &&) noexcept = default;
+	using array_type = QSet<TValue>;
 
-	inline SerializableArray(const QSet<TValue> &other) :
-		QSet<TValue>{other}
-	{}
-
-	inline SerializableArray(QSet<TValue> &&other) noexcept :
-		QSet<TValue>{std::move(other)}
-	{}
-
-	inline SerializableArray &operator=(const QSet<TValue> &other) {
-		QSet<TValue>::operator=(other);
-		return *this;
-	}
-
-	inline SerializableArray &operator=(QSet<TValue> &&other) noexcept {
-		QSet<TValue>::operator=(std::move(other));
-		return *this;
-	}
-
-	QJsonValue toJson(const Configuration &config) const override {
+	static QJsonValue toJson(const array_type &value, const Configuration &config = {}) {
 		QJsonArray array;
-		for (const auto &value : qAsConst(*this))
-			array.append(SerializableAdapter<TValue>::toJson(value, config));
+		for (const auto &element : value)
+			array.push_back(SerializableAdapter<TValue>::toJson(element, config));
 		return array;
 	}
 
-	void assignJson(const QJsonValue &value, const Configuration &config) override {
+	static array_type fromJson(const QJsonValue &value, const Configuration &config = {}) {
 		if (!value.isArray())
 			throw InvalidValueTypeException{value.type(), {QJsonValue::Array}};
-		const auto array = value.toArray();
-		for (const auto &element : array)
-			this->insert(SerializableAdapter<TValue>::fromJson(element, config));
+		array_type result;
+		for (const auto &element : value.toArray())
+			result.insert(SerializableAdapter<TValue>::fromJson(element, config));
+		return result;
 	}
 
-	QCborValue toCbor(const Configuration &config) const override {
+	static QCborValue toCbor(const array_type &value, const Configuration &config = {}) {
 		QCborArray array;
-		for (const auto &value : qAsConst(*this))
-			array.append(SerializableAdapter<TValue>::toCbor(value, config));
+		for (const auto &element : value)
+			array.push_back(SerializableAdapter<TValue>::toCbor(element, config));
 		return {FiniteSetTag, array};
 	}
 
-	void assignCbor(const QCborValue &value, const Configuration &config) override {
+	static array_type fromCbor(const QCborValue &value, const Configuration &config = {}) {
 		QCborTag tag = static_cast<QCborTag>(-1);
-        const auto xValue = __private::extract(value, &tag);
-        if (tag != FiniteSetTag)
-            throw InvalidValueTagException{tag, {FiniteSetTag}};
+		const auto xValue = __private::extract(value, &tag);
+		if (tag != FiniteSetTag)
+			throw InvalidValueTagException{tag, {FiniteSetTag}};
 		if (!xValue.isArray())
 			throw InvalidValueTypeException{xValue.type(), {QCborValue::Array}};
+		array_type result;
 		for (const auto &element : xValue.toArray())
-			this->insert(SerializableAdapter<TValue>::fromCbor(element, config));
-	}
-
-	inline static SerializableArray fromJson(const QJsonValue &value, const Configuration &config) {
-		SerializableArray data;
-		data.assignJson(value, config);
-		return data;
-	}
-
-	inline static SerializableArray fromCbor(const QCborValue &value, const Configuration &config) {
-		SerializableArray data;
-		data.assignCbor(value, config);
-		return data;
+			result.insert(SerializableAdapter<TValue>::fromCbor(element, config));
+		return result;
 	}
 };
 
-template <typename TValue>
-using SerializableList = SerializableArray<TValue, QList>;
-template <typename TValue>
-using SerializableVector = SerializableArray<TValue, QVector>;
-#ifndef QT_NO_LINKED_LIST
-template <typename TValue>
-using SerializableLinkedList = SerializableArray<TValue, QLinkedList>;
-#endif
-template <typename TValue>
-using SerializableStack = SerializableArray<TValue, QStack>;
-template <typename TValue>
-using SerializableQueue = SerializableArray<TValue, QQueue>;
-template <typename TValue>
-using SerializableSet = SerializableArray<TValue, QSet>;
-
 }
-
-Q_DECLARE_SEQUENTIAL_CONTAINER_METATYPE(QtJson::SerializableList)
-Q_DECLARE_SEQUENTIAL_CONTAINER_METATYPE(QtJson::SerializableVector)
-#ifndef QT_NO_LINKED_LIST
-Q_DECLARE_SEQUENTIAL_CONTAINER_METATYPE(QtJson::SerializableLinkedList)
-#endif
-Q_DECLARE_SEQUENTIAL_CONTAINER_METATYPE(QtJson::SerializableStack)
-Q_DECLARE_SEQUENTIAL_CONTAINER_METATYPE(QtJson::SerializableQueue)
-Q_DECLARE_SEQUENTIAL_CONTAINER_METATYPE(QtJson::SerializableSet)
