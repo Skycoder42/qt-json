@@ -91,6 +91,15 @@ public:
 	ExceptionBase *clone() const override;
 };
 
+class QTJSON_EXPORT InvalidPropertyMethodCallException : public Exception
+{
+public:
+    InvalidPropertyMethodCallException(const QMetaProperty &property, const QMetaMethod &method);
+
+    void raise() const override;
+    ExceptionBase *clone() const override;
+};
+
 class QTJSON_EXPORT ValidationFailureException : public Exception
 {
 public:

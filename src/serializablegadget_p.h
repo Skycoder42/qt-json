@@ -3,6 +3,8 @@
 #include "serializablegadget.h"
 
 #include <QtCore/QMetaMethod>
+#include <QtCore/QJsonObject>
+#include <QtCore/QCborMap>
 
 namespace QtJson::__private {
 
@@ -12,13 +14,10 @@ struct DataValueInfo<QJsonValue> {
 	using Map = QJsonObject;
 	using List = QJsonArray;
 
-	static constexpr auto Undefined = QJsonValue::Undefined;
+    static constexpr auto Invalid = QJsonValue::Undefined;
 	static constexpr auto Null = QJsonValue::Null;
 	static constexpr auto String = QJsonValue::String;
-	static constexpr auto Integer = QJsonValue::Double;
-
-	static constexpr auto To = AdapterMethod::ToJson;
-	static constexpr auto From = AdapterMethod::FromJson;
+    static constexpr auto Integer = QJsonValue::Double;
 
 	inline static QReturnArgument<Value> returnArg(Value &value) {
 		return QReturnArgument<Value>("QJsonValue", value);
@@ -35,13 +34,10 @@ struct DataValueInfo<QCborValue> {
 	using Map = QCborMap;
 	using List = QCborArray;
 
-	static constexpr auto Undefined = QCborValue::Undefined;
+    static constexpr auto Invalid = QCborValue::Invalid;
 	static constexpr auto Null = QCborValue::Null;
 	static constexpr auto String = QCborValue::String;
-	static constexpr auto Integer = QCborValue::Integer;
-
-	static constexpr auto To = AdapterMethod::ToCbor;
-	static constexpr auto From = AdapterMethod::FromCbor;
+    static constexpr auto Integer = QCborValue::Integer;
 
 	inline static QReturnArgument<Value> returnArg(Value &value) {
 		return QReturnArgument<Value>("QCborValue", value);

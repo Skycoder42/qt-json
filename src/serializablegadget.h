@@ -4,6 +4,7 @@
 #include "serializableadapter.h"
 
 #include <type_traits>
+#include <optional>
 
 #include <QtCore/QObject>
 
@@ -37,12 +38,23 @@ protected:
 	virtual const QMetaObject *getMetaObject() const = 0;
 
 private:
-	static QByteArray serializablePropInfoName(const QMetaProperty &property);
-	ISerializable *asSerializable(const QMetaObject *mo,
-								  const QMetaProperty &property) const;
-	std::optional<QMetaMethod> findMethod(const QMetaObject *mo,
+    std::optional<QMetaMethod> findMethod(const QMetaObject *metaObject,
 										  const QMetaProperty &property,
 										  __private::AdapterMethod method) const;
+    QJsonValue propToJson(const QMetaObject *metaObject,
+                          const QMetaProperty &property,
+                          const Configuration &config) const;
+    bool propAssignJson(const QMetaObject *metaObject,
+                        const QMetaProperty &property,
+                        const QJsonValue &value,
+                        const Configuration &config);
+    QCborValue propToCbor(const QMetaObject *metaObject,
+                          const QMetaProperty &property,
+                          const Configuration &config) const;
+    bool propAssignCbor(const QMetaObject *metaObject,
+                        const QMetaProperty &property,
+                        const QCborValue &value,
+                        const Configuration &config);
 
 	template <typename TValue>
 	TValue findInfo(const QMetaObject *metaObject, const char *key, const TValue &defaultValue) const;

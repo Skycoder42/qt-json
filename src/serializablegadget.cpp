@@ -34,32 +34,7 @@ void SerializableGadget::assignCbor(const QCborValue &value, const Configuration
 	deserialize<QCborValue>(value.toMap(), config);
 }
 
-QByteArray SerializableGadget::serializablePropInfoName(const QMetaProperty &property)
-{
-	const auto rawName = QByteArrayLiteral(QTJSON_SERIALIZABLE_PROP_KEY_STR) +
-						 property.name() +
-						 QByteArrayLiteral("()");
-	return QMetaObject::normalizedSignature(rawName);
-}
-
-ISerializable *SerializableGadget::asSerializable(const QMetaObject *mo, const QMetaProperty &property) const
-{
-	// check if annotated
-	const auto mIdx = mo->indexOfMethod(serializablePropInfoName(property));
-	if (mIdx >= 0) {
-		const auto method = mo->method(mIdx);
-		ISerializable *serializable = nullptr;
-		if (method.invokeOnGadget(const_cast<QtJson::SerializableGadget*>(this),
-								  Q_RETURN_ARG(QtJson::ISerializable*, serializable))) {
-			if (serializable)
-				return serializable;
-		}
-	}
-
-	return nullptr;
-}
-
-std::optional<QMetaMethod> SerializableGadget::findMethod(const QMetaObject *mo, const QMetaProperty &property, AdapterMethod method) const
+std::optional<QMetaMethod> SerializableGadget::findMethod(const QMetaObject *metaObject, const QMetaProperty &property, AdapterMethod method) const
 {
 	const QByteArray propName = property.name();
 	QByteArray rawMethodSignature;
@@ -80,11 +55,69 @@ std::optional<QMetaMethod> SerializableGadget::findMethod(const QMetaObject *mo,
 		Q_UNREACHABLE();
 	}
 
-	const auto mIdx = mo->indexOfMethod(QMetaObject::normalizedSignature(rawMethodSignature));
+    const auto mIdx = metaObject->indexOfMethod(QMetaObject::normalizedSignature(rawMethodSignature));
 	if (mIdx < 0)
 		return std::nullopt;
 	else
-		return mo->method(mIdx);
+        return metaObject->method(mIdx);
+}
+
+QJsonValue SerializableGadget::propToJson(const QMetaObject *metaObject, const QMetaProperty &property, const Configuration &config) const
+{
+    const auto method = findMethod(metaObject, property, AdapterMethod::ToJson);
+    if (!method)
+        return QJsonValue::Undefined;
+
+    QJsonValue result;
+    if (!method->invokeOnGadget(const_cast<SerializableGadget*>(this),
+                                Q_RETURN_ARG(QJsonValue, result),
+                                Q_ARG(QtJson::Configuration, config))) {
+        throw InvalidPropertyMethodCallException(property, *method);
+    }
+    return result;
+}
+
+bool SerializableGadget::propAssignJson(const QMetaObject *metaObject, const QMetaProperty &property, const QJsonValue &value, const Configuration &config)
+{
+    const auto method = findMethod(metaObject, property, AdapterMethod::FromJson);
+    if (!method)
+        return false;
+
+    if (!method->invokeOnGadget(this,
+                                Q_ARG(QJsonValue, value),
+                                Q_ARG(QtJson::Configuration, config))) {
+        throw InvalidPropertyMethodCallException(property, *method);
+    }
+    return true;
+}
+
+QCborValue SerializableGadget::propToCbor(const QMetaObject *metaObject, const QMetaProperty &property, const Configuration &config) const
+{
+    const auto method = findMethod(metaObject, property, AdapterMethod::ToCbor);
+    if (!method)
+        return QCborValue::Invalid;
+
+    QCborValue result;
+    if (!method->invokeOnGadget(const_cast<SerializableGadget*>(this),
+                                Q_RETURN_ARG(QCborValue, result),
+                                Q_ARG(QtJson::Configuration, config))) {
+        throw InvalidPropertyMethodCallException(property, *method);
+    }
+    return result;
+}
+
+bool SerializableGadget::propAssignCbor(const QMetaObject *metaObject, const QMetaProperty &property, const QCborValue &value, const Configuration &config)
+{
+    const auto method = findMethod(metaObject, property, AdapterMethod::FromCbor);
+    if (!method)
+        return false;
+
+    if (!method->invokeOnGadget(this,
+                                Q_ARG(QCborValue, value),
+                                Q_ARG(QtJson::Configuration, config))) {
+        throw InvalidPropertyMethodCallException(property, *method);
+    }
+    return true;
 }
 
 template<typename TValue>
@@ -108,31 +141,29 @@ typename DataValueInfo<TValue>::Map SerializableGadget::serialize(const Configur
 		if (!config.ignoreStored && !property.isStored())
 			continue;
 
-		typename DataValueInfo<TValue>::Value value {DataValueInfo<TValue>::Undefined};
-		if (const auto method = findMethod(metaObject, property, DataValueInfo<TValue>::To); method) {
-			const auto ok = method->invokeOnGadget(const_cast<SerializableGadget*>(this),
-												   DataValueInfo<TValue>::returnArg(value),
-												   Q_ARG(QtJson::Configuration, config));
-			if (!ok) {
-				// TODO
-			}
-		} else {
-			auto variant = property.readOnGadget(this);
-			if (!variant.isValid())
-				continue;
+        typename DataValueInfo<TValue>::Value value;
+        if constexpr (std::is_same_v<TValue, QCborValue>)
+            value = propToCbor(metaObject, property, config);
+        else
+            value = propToJson(metaObject, property, config);
 
-			if (property.isEnumType()) {
-				if (config.enumAsString) {
-					const auto metaEnum = property.enumerator();
-					if (metaEnum.isFlag())
-						value = QString::fromUtf8(metaEnum.valueToKeys(variant.toInt()));
-					else
-						value = QString::fromUtf8(metaEnum.valueToKey(variant.toInt()));
-				} else
-					value = variant.toInt();
-			} else
-				value = TValue::fromVariant(variant);
-		}
+        if (value == DataValueInfo<TValue>::Invalid) {
+            const auto variant = property.readOnGadget(this);
+            if (!variant.isValid())
+                continue;
+
+            if (property.isEnumType()) {
+                if (config.enumAsString) {
+                    const auto metaEnum = property.enumerator();
+                    if (metaEnum.isFlag())
+                        value = QString::fromUtf8(metaEnum.valueToKeys(variant.toInt()));
+                    else
+                        value = QString::fromUtf8(metaEnum.valueToKey(variant.toInt()));
+                } else
+                    value = variant.toInt();
+            } else
+                value = TValue::fromVariant(variant);
+        }
 
 		map.insert(QString::fromUtf8(property.name()), value);
 	}
@@ -162,13 +193,14 @@ void SerializableGadget::deserialize(const typename DataValueInfo<TValue>::Map &
 				continue; // skip unset properties
 		}
 
-		const auto value = map.value(key);
-		if (const auto serializable = asSerializable(metaObject, property); serializable) {
-			if constexpr (std::is_same_v<TValue, QCborValue>)
-				serializable->assignCbor(value, config);
-			else
-				serializable->assignJson(value, config);
-		} else {
+        const auto value = map.value(key);
+        bool assigned;
+        if constexpr (std::is_same_v<TValue, QCborValue>)
+            assigned = propAssignCbor(metaObject, property, value, config);
+        else
+            assigned = propAssignJson(metaObject, property, value, config);
+
+        if (!assigned) {
 			QVariant variant{property.userType(), nullptr};
 
 			if (property.isEnumType()) {
@@ -188,9 +220,11 @@ void SerializableGadget::deserialize(const typename DataValueInfo<TValue>::Map &
 						throw InvalidPropertyValueException{property, value};
 				} else if (value.type() == DataValueInfo<TValue>::Integer) {
 					if constexpr(std::is_same_v<TValue, QCborValue>)
-						variant = static_cast<int>(value.toInteger());
-					else
-						variant = value.toInt();
+                        variant = static_cast<int>(value.toInteger());
+                    else {
+                        // TODO validate is truly int
+                        variant = value.toInt();
+                    }
 				} else
 					throw InvalidValueTypeException{value.type(), {DataValueInfo<TValue>::String, DataValueInfo<TValue>::Integer}};
 			} else

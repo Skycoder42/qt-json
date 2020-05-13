@@ -198,6 +198,29 @@ ExceptionBase *InvalidPropertyValueException::clone() const
 
 
 
+InvalidPropertyMethodCallException::InvalidPropertyMethodCallException(const QMetaProperty &property, const QMetaMethod &method) :
+    Exception{
+        QByteArrayLiteral("Failed to invoke meta method \"") +
+        method.methodSignature() +
+        "\" for property " +
+        property.name() +
+        " on gadget of type " +
+        property.enclosingMetaObject()->className()
+    }
+{}
+
+void InvalidPropertyMethodCallException::raise() const
+{
+    throw *this;
+}
+
+QtJson::ExceptionBase *InvalidPropertyMethodCallException::clone() const
+{
+    return new InvalidPropertyMethodCallException{*this};
+}
+
+
+
 ValidationFailureException::ValidationFailureException(const QMetaProperty &property) :
 	Exception{
 		QByteArrayLiteral("Property ") +
