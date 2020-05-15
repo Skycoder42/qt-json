@@ -1,7 +1,7 @@
 CONFIG += c++17 exceptions
 
 HEADERS += \
-	$$PWD/src/qt-json.h \
+	$$PWD/src/qtjson.h \
 	$$PWD/src/qtjson_helpers.h \
 	$$PWD/src/serializablearray.h \
 	$$PWD/src/serializablearray_p.h \

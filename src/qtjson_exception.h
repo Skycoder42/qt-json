@@ -9,6 +9,7 @@
 #include <QtCore/QVariant>
 #include <QtCore/QJsonValue>
 #include <QtCore/QCborValue>
+#include <QtCore/QJsonParseError>
 
 #if !defined(QT_NO_EXCEPTIONS) && QT_CONFIG(future)
 #include <QtCore/qexception.h>
@@ -108,6 +109,34 @@ public:
 
 	void raise() const override;
 	ExceptionBase *clone() const override;
+};
+
+class QTJSON_EXPORT InvalidDataException : public Exception
+{
+public:
+    explicit InvalidDataException();
+
+    void raise() const override;
+    ExceptionBase *clone() const override;
+};
+
+class QTJSON_EXPORT JsonParseException : public Exception
+{
+public:
+    explicit JsonParseException(const QJsonParseError &error);
+
+    void raise() const override;
+    ExceptionBase *clone() const override;
+};
+
+class QTJSON_EXPORT CborParseException : public Exception
+{
+public:
+    explicit CborParseException(const QByteArray &signature);
+    explicit CborParseException(const QCborParserError &error);
+
+    void raise() const override;
+    ExceptionBase *clone() const override;
 };
 
 }

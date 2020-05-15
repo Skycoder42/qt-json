@@ -47,7 +47,7 @@ void InvalidValueTypeException::raise() const
 	throw *this;
 }
 
-QtJson::ExceptionBase *InvalidValueTypeException::clone() const
+ExceptionBase *InvalidValueTypeException::clone() const
 {
 	return new InvalidValueTypeException{*this};
 }
@@ -133,7 +133,7 @@ void InvalidValueTagException::raise() const
 	throw *this;
 }
 
-QtJson::ExceptionBase *InvalidValueTagException::clone() const
+ExceptionBase *InvalidValueTagException::clone() const
 {
 	return new InvalidValueTagException{*this};
 }
@@ -214,7 +214,7 @@ void InvalidPropertyMethodCallException::raise() const
     throw *this;
 }
 
-QtJson::ExceptionBase *InvalidPropertyMethodCallException::clone() const
+ExceptionBase *InvalidPropertyMethodCallException::clone() const
 {
     return new InvalidPropertyMethodCallException{*this};
 }
@@ -247,7 +247,72 @@ void ValidationFailureException::raise() const
 	throw *this;
 }
 
-QtJson::ExceptionBase *ValidationFailureException::clone() const
+ExceptionBase *ValidationFailureException::clone() const
 {
 	return new ValidationFailureException{*this};
+}
+
+
+
+InvalidDataException::InvalidDataException() :
+    Exception{"Got unexpected invalid CBOR/JSON data! Unable to continue serialization"}
+{}
+
+void InvalidDataException::raise() const
+{
+    throw *this;
+}
+
+ExceptionBase *InvalidDataException::clone() const
+{
+    return new InvalidDataException{*this};
+}
+
+
+
+JsonParseException::JsonParseException(const QJsonParseError &error) :
+    Exception{
+        "Failed to parse JSON data at position " +
+        QByteArray::number(error.offset) +
+        " with error: " +
+        error.errorString().toUtf8()
+    }
+{}
+
+void JsonParseException::raise() const
+{
+    throw *this;
+}
+
+ExceptionBase *JsonParseException::clone() const
+{
+    return new JsonParseException{*this};
+}
+
+
+
+CborParseException::CborParseException(const QByteArray &signature) :
+    Exception{
+        "Unable to parse CBOR data - expected signature to be 0xd9d9f7, but was 0x" +
+        signature.toHex().toLower()
+    }
+{}
+
+CborParseException::CborParseException(const QCborParserError &error) :
+    Exception{
+        "Failed to parse CBOR data at position " +
+        QByteArray::number(error.offset) +
+        " with error: " +
+        error.errorString().toUtf8()
+    }
+{}
+
+void CborParseException::raise() const
+{
+    throw *this;
+}
+
+ExceptionBase *CborParseException::clone() const
+{
+    return new CborParseException{*this};
 }
