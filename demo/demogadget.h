@@ -35,6 +35,9 @@ public slots:
 		_special = special;
 	}
 
+private:
 	double _special = -1;
 };
 
+Q_DECLARE_METATYPE(std::optional<QDateTime>)
+Q_DECLARE_METATYPE(DemoGadget)
