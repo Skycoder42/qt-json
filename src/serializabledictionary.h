@@ -39,6 +39,7 @@ public:
 			result.insert(QVariant{it.key()}.template value<TKey>(),
 						  SerializableAdapter<TValue>::fromJson(it.value(), config));
 		}
+        return result;
 	}
 
 	static QCborValue toCbor(const dictionary_type &value, const Configuration &config = {}) {
@@ -60,6 +61,7 @@ public:
 			result.insert(SerializableAdapter<TKey>::fromCbor(it.key(), config),
 						  SerializableAdapter<TValue>::fromCbor(it.value(), config));
 		}
+        return result;
 	}
 };
 

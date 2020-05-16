@@ -5,10 +5,10 @@
 using namespace QtJson;
 
 class DictionaryTest : public SerializationMultiTest<
-						   SerializableMap<QString, int>,
-						   SerializableHash<QString, int>,
-						   SerializableMap<double, bool>,
-						   SerializableMap<int, TestSerializable>>
+                           QMap<QString, int>,
+                           QHash<QString, int>,
+                           QMap<double, bool>,
+                           QMap<int, TestSerializable>>
 {
 	Q_OBJECT
 
@@ -19,22 +19,24 @@ protected:
 
 private:
 	template <typename... TArgs>
-	inline ConstSerPtr dm(TArgs... args) const {
-		return d<SerializableMap<QString, int>>(SerializableMap<QString, int>{args...});
+    inline Variant dm(TArgs&&... args) const {
+        return d<QMap<QString, int>>(std::forward<TArgs>(args)...);
 	}
 	template <typename... TArgs>
-	inline ConstSerPtr dh(TArgs... args) const {
-		return d<SerializableHash<QString, int>>(SerializableHash<QString, int>{args...});
+    inline Variant dh(TArgs&&... args) const {
+        return d<QHash<QString, int>>(std::forward<TArgs>(args)...);
 	}
 	template <typename... TArgs>
-	inline ConstSerPtr dmk(TArgs... args) const {
-		return d<SerializableMap<double, bool>>(SerializableMap<double, bool>{args...});
+    inline Variant dmk(TArgs&&... args) const {
+        return d<QMap<double, bool>>(std::forward<TArgs>(args)...);
 	}
 	template <typename... TArgs>
-	inline ConstSerPtr dms(TArgs... args) const {
-		return d<SerializableMap<int, TestSerializable>>(SerializableMap<int, TestSerializable>{args...});
+    inline Variant dms(TArgs&&... args) const {
+        return d<QMap<int, TestSerializable>>(std::forward<TArgs>(args)...);
 	}
 };
+
+Q_DECLARE_METATYPE(DictionaryTest::Variant)
 
 void DictionaryTest::setupData() const
 {
@@ -165,7 +167,7 @@ void DictionaryTest::setupDeserData() const
 								   << QJsonValue{QJsonValue::Undefined}
 								   << QCborValue{QCborMap{
 										  {QStringLiteral("a"), 1},
-										  {QStringLiteral("b"), 2},
+                                          {QStringLiteral("b"), 2},
 										  {QStringLiteral("c"), 3}
 									  }}
 								   << false;

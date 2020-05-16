@@ -6,17 +6,14 @@
 #include <QtTest>
 
 #include "iserializable.h"
+#include "serializableadapter.h"
 #include "qtjson_exception.h"
 
 Q_DECLARE_METATYPE(QSharedPointer<const QtJson::ISerializable>)
 
 class SerializationTestBase : public QObject
 {
-	Q_OBJECT
-
-public:
-	using SerPtr = QSharedPointer<QtJson::ISerializable>;
-	using ConstSerPtr = QSharedPointer<const QtJson::ISerializable>;
+    Q_OBJECT
 
 protected:
 	virtual void setupData() const;
@@ -25,22 +22,15 @@ protected:
 
 	void compare(const QJsonValue &actual, const QJsonValue &expected, const char *file, int line) const;
 	void compare(const QCborValue &actual, const QCborValue &expected, const char *file, int line) const;
-	virtual void compare(const ConstSerPtr &actual, const ConstSerPtr &expected, const char *file, int line) const = 0;
-
-	QByteArray stringify(const QJsonValue &value) const;
-
-	virtual SerPtr cloneEmpty(const ConstSerPtr &base) = 0;
-
-	template <typename TSerializable, typename... TArgs>
-	ConstSerPtr d(TArgs&& ...data) const {
-		return QSharedPointer<const TSerializable>::create(std::forward<TArgs>(data)...);
-	}
 
 private Q_SLOTS:
-	void testSerialization_data();
-	void testSerialization();
-	void testDeserialization_data();
-	void testDeserialization();
+    virtual void testSerialization_data() = 0;
+    virtual void testSerialization() = 0;
+    virtual void testDeserialization_data() = 0;
+    virtual void testDeserialization() = 0;
+
+private:
+    QByteArray stringify(const QJsonValue &value) const;
 };
 
 
@@ -49,14 +39,17 @@ template <typename TSerializable>
 class SerializationTest : public SerializationTestBase
 {
 protected:
-	void compare(const ConstSerPtr &actual, const ConstSerPtr &expected, const char *file, int line) const override;
+    using SerializationTestBase::compare;
+    void compare(const TSerializable &actual, const TSerializable &expected, const char *file, int line) const;
 
-	SerPtr cloneEmpty(const ConstSerPtr &base) override;
+    template <typename... TArgs>
+    inline TSerializable d(TArgs&&... args) const;
 
-	template <typename... TArgs>
-	ConstSerPtr d(TArgs&& ...data) const {
-		return QSharedPointer<const TSerializable>::create(std::forward<TArgs>(data)...);
-	}
+private:
+    void testSerialization_data() final;
+    void testSerialization() final;
+    void testDeserialization_data() final;
+    void testDeserialization() final;
 };
 
 
@@ -65,109 +58,220 @@ template <typename... TSerializables>
 class SerializationMultiTest : public SerializationTestBase
 {
 public:
-	using Variant = std::variant<QSharedPointer<const TSerializables>...>;
+    using Variant = std::variant<TSerializables...>;
 
 protected:
-	void compare(const ConstSerPtr &actual, const ConstSerPtr &expected, const char *file, int line) const override;
-	SerPtr cloneEmpty(const ConstSerPtr &base) override;
+    using SerializationTestBase::compare;
+    void compare(const Variant &actual, const Variant &expected, const char *file, int line) const;
 
-	inline std::optional<Variant> extractVariant(const ConstSerPtr &data) const;
-
-	template <typename TSerializable, typename... TArgs>
-	ConstSerPtr d(TArgs&& ...data) const {
-		static_assert (std::disjunction_v<std::is_same<TSerializable, TSerializables>...>, "TSerializable must be one of the TSerializables");
-		return QSharedPointer<const TSerializable>::create(std::forward<TArgs>(data)...);
-	}
+    template <typename TSerializable, typename... TArgs>
+    inline Variant d(TArgs&&... args) const;
 
 private:
-	template <typename TFirst>
-	inline std::optional<Variant> extract(const ConstSerPtr &data) const;
-	template <typename TFirst, typename TSecond, typename... TArgs>
-	inline std::optional<Variant> extract(const ConstSerPtr &data) const;
+    void testSerialization_data() final;
+    void testSerialization() final;
+    void testDeserialization_data() final;
+    void testDeserialization() final;
 };
 
 
 
 template<typename TSerializable>
-void SerializationTest<TSerializable>::compare(const SerializationTestBase::ConstSerPtr &actual, const SerializationTestBase::ConstSerPtr &expected, const char *file, int line) const
+template<typename... TArgs>
+TSerializable SerializationTest<TSerializable>::d(TArgs&&... args) const
 {
-	QVERIFY(actual.dynamicCast<const TSerializable>());
-	QVERIFY(expected.dynamicCast<const TSerializable>());
-	const auto &aData = *actual.staticCast<const TSerializable>();
-	const auto &eData = *expected.staticCast<const TSerializable>();
-	if (!QTest::qCompare(aData, eData, "actual", "expected", file, line)){
-		qCritical().noquote() << "Actual:  " << aData;
-		qCritical().noquote() << "Expected:" << eData;
-	}
+    return TSerializable{std::forward<TArgs>(args)...};
 }
 
 template<typename TSerializable>
-SerializationTestBase::SerPtr SerializationTest<TSerializable>::cloneEmpty(const ConstSerPtr &base)
+void SerializationTest<TSerializable>::compare(const TSerializable &actual, const TSerializable &expected, const char *file, int line) const
 {
-	if (!QTest::qVerify(base.dynamicCast<const TSerializable>(), "base.dynamicCast<TSerializable>()", "", __FILE__, __LINE__))\
-		return {};
-	return QSharedPointer<TSerializable>::create();
+    if (!QTest::qCompare(actual, expected, "actual", "expected", file, line)) {
+        qCritical().noquote() << "Actual:  " << actual;
+        qCritical().noquote() << "Expected:" << expected;
+    }
+}
+
+template<typename TSerializable>
+void SerializationTest<TSerializable>::testSerialization_data()
+{
+    QTest::addColumn<QtJson::Configuration>("config");
+    QTest::addColumn<TSerializable>("data");
+    QTest::addColumn<QJsonValue>("json");
+    QTest::addColumn<QCborValue>("cbor");
+    QTest::addColumn<bool>("throws");
+
+    setupData();
+    setupSerData();
+}
+
+template<typename TSerializable>
+void SerializationTest<TSerializable>::testSerialization()
+{
+    QFETCH(QtJson::Configuration, config);
+    QFETCH(TSerializable, data);
+    QFETCH(QJsonValue, json);
+    QFETCH(QCborValue, cbor);
+    QFETCH(bool, throws);
+
+    try {
+        if (throws) {
+            if (!json.isUndefined())
+                QVERIFY_EXCEPTION_THROWN(QtJson::SerializableAdapter<TSerializable>::toJson(data, config), QtJson::Exception);
+            if (!cbor.isInvalid())
+                QVERIFY_EXCEPTION_THROWN(QtJson::SerializableAdapter<TSerializable>::toCbor(data, config), QtJson::Exception);
+        } else {
+            if (!json.isUndefined())
+                compare(QtJson::SerializableAdapter<TSerializable>::toJson(data, config), json, __FILE__, __LINE__);
+            if (!cbor.isInvalid())
+                compare(QtJson::SerializableAdapter<TSerializable>::toCbor(data, config), cbor, __FILE__, __LINE__);
+        }
+    } catch (std::exception &e) {
+        QFAIL(e.what());
+    }
+}
+
+template<typename TSerializable>
+void SerializationTest<TSerializable>::testDeserialization_data()
+{
+    QTest::addColumn<QtJson::Configuration>("config");
+    QTest::addColumn<TSerializable>("data");
+    QTest::addColumn<QJsonValue>("json");
+    QTest::addColumn<QCborValue>("cbor");
+    QTest::addColumn<bool>("throws");
+
+    setupData();
+    setupDeserData();
+}
+
+template<typename TSerializable>
+void SerializationTest<TSerializable>::testDeserialization()
+{
+    QFETCH(QtJson::Configuration, config);
+    QFETCH(TSerializable, data);
+    QFETCH(QJsonValue, json);
+    QFETCH(QCborValue, cbor);
+    QFETCH(bool, throws);
+
+    try {
+        if (throws) {
+            if (!json.isUndefined())
+                QVERIFY_EXCEPTION_THROWN(QtJson::SerializableAdapter<TSerializable>::fromJson(json, config), QtJson::Exception);
+            if (!cbor.isInvalid())
+                QVERIFY_EXCEPTION_THROWN(QtJson::SerializableAdapter<TSerializable>::fromCbor(cbor, config), QtJson::Exception);
+        } else {
+            if (!json.isUndefined())
+                compare(QtJson::SerializableAdapter<TSerializable>::fromJson(json, config), data, __FILE__, __LINE__);
+            if (!cbor.isInvalid())
+                compare(QtJson::SerializableAdapter<TSerializable>::fromCbor(cbor, config), data, __FILE__, __LINE__);
+        }
+    } catch (std::exception &e) {
+        QFAIL(e.what());
+    }
 }
 
 
 
 template<typename... TSerializables>
-void SerializationMultiTest<TSerializables...>::compare(const SerializationTestBase::ConstSerPtr &lhs, const SerializationTestBase::ConstSerPtr &rhs, const char *file, int line) const
+void SerializationMultiTest<TSerializables...>::compare(const Variant &actual, const Variant &expected, const char *file, int line) const
 {
-	using ValVariant = std::variant<TSerializables...>;
-	const auto toValVar = [](const auto &data) -> ValVariant {
-		return *data;
-	};
-
-	const auto actualVar = extractVariant(lhs);
-	QVERIFY(actualVar);
-	const auto expectedVar = extractVariant(rhs);
-	QVERIFY(expectedVar);
-	const auto actualData = std::visit(toValVar, *actualVar);
-	const auto expectedData = std::visit(toValVar, *expectedVar);
-	if (!QTest::qCompare(actualData, expectedData, "actual", "expected", file, line)){
-		std::visit([](const auto &data) {
-			qCritical().noquote() << "Actual:  " << data;
-		}, actualData);
-		std::visit([](const auto &data) {
-			qCritical().noquote() << "Expected:" << data;
-		}, expectedData);
-	}
+    if (!QTest::qCompare(actual, expected, "actual", "expected", file, line)){
+        std::visit([](const auto &data) {
+            qCritical().noquote() << "Actual:  " << data;
+        }, actual);
+        std::visit([](const auto &data) {
+            qCritical().noquote() << "Expected:" << data;
+        }, expected);
+    }
 }
 
 template<typename... TSerializables>
-SerializationTestBase::SerPtr SerializationMultiTest<TSerializables...>::cloneEmpty(const SerializationTestBase::ConstSerPtr &base)
+void SerializationMultiTest<TSerializables...>::testSerialization_data()
 {
-	const auto var = extractVariant(base);
-	if (!QTest::qVerify(static_cast<bool>(var), "extractVariant(base)", "", __FILE__, __LINE__))\
-		return {};
-	return std::visit([](const auto &data) -> SerPtr {
-		return QSharedPointer<std::decay_t<decltype(*data)>>::create();
-	}, *var);
+    QTest::addColumn<QtJson::Configuration>("config");
+    QTest::addColumn<Variant>("data");
+    QTest::addColumn<QJsonValue>("json");
+    QTest::addColumn<QCborValue>("cbor");
+    QTest::addColumn<bool>("throws");
+
+    setupData();
+    setupSerData();
 }
 
 template<typename... TSerializables>
-inline std::optional<typename SerializationMultiTest<TSerializables...>::Variant> SerializationMultiTest<TSerializables...>::extractVariant(const SerializationTestBase::ConstSerPtr &data) const
+void SerializationMultiTest<TSerializables...>::testSerialization()
 {
-	return extract<TSerializables...>(data);
+    QFETCH(QtJson::Configuration, config);
+    QFETCH(Variant, data);
+    QFETCH(QJsonValue, json);
+    QFETCH(QCborValue, cbor);
+    QFETCH(bool, throws);
+
+    std::visit([this, config, json, cbor, throws](const auto &vData) {
+        using TSerializable = std::decay_t<decltype(vData)>;
+        try {
+            if (throws) {
+                if (!json.isUndefined())
+                    QVERIFY_EXCEPTION_THROWN(QtJson::SerializableAdapter<TSerializable>::toJson(vData, config), QtJson::Exception);
+                if (!cbor.isInvalid())
+                    QVERIFY_EXCEPTION_THROWN(QtJson::SerializableAdapter<TSerializable>::toCbor(vData, config), QtJson::Exception);
+            } else {
+                if (!json.isUndefined())
+                    compare(QtJson::SerializableAdapter<TSerializable>::toJson(vData, config), json, __FILE__, __LINE__);
+                if (!cbor.isInvalid())
+                    compare(QtJson::SerializableAdapter<TSerializable>::toCbor(vData, config), cbor, __FILE__, __LINE__);
+            }
+        } catch (std::exception &e) {
+            QFAIL(e.what());
+        }
+    }, data);
 }
 
 template<typename... TSerializables>
-template <typename TFirst>
-inline std::optional<typename SerializationMultiTest<TSerializables...>::Variant> SerializationMultiTest<TSerializables...>::extract(const ConstSerPtr &data) const
+void SerializationMultiTest<TSerializables...>::testDeserialization_data()
 {
-	if (const auto d = data.dynamicCast<const TFirst>(); d)
-		return d;
-	else
-		return std::nullopt;
+    QTest::addColumn<QtJson::Configuration>("config");
+    QTest::addColumn<Variant>("data");
+    QTest::addColumn<QJsonValue>("json");
+    QTest::addColumn<QCborValue>("cbor");
+    QTest::addColumn<bool>("throws");
+
+    setupData();
+    setupDeserData();
 }
 
 template<typename... TSerializables>
-template <typename TFirst, typename TSecond, typename... TArgs>
-inline std::optional<typename SerializationMultiTest<TSerializables...>::Variant> SerializationMultiTest<TSerializables...>::extract(const ConstSerPtr &data) const
+void SerializationMultiTest<TSerializables...>::testDeserialization()
 {
-	if (const auto d = data.dynamicCast<const TFirst>(); d)
-		return d;
-	else
-		return extract<TSecond, TArgs...>(data);
+    QFETCH(QtJson::Configuration, config);
+    QFETCH(Variant, data);
+    QFETCH(QJsonValue, json);
+    QFETCH(QCborValue, cbor);
+    QFETCH(bool, throws);
+
+    std::visit([this, config, json, cbor, throws](const auto &vData) {
+        using TSerializable = std::decay_t<decltype(vData)>;
+        try {
+            if (throws) {
+                if (!json.isUndefined())
+                    QVERIFY_EXCEPTION_THROWN(QtJson::SerializableAdapter<TSerializable>::fromJson(json, config), QtJson::Exception);
+                if (!cbor.isInvalid())
+                    QVERIFY_EXCEPTION_THROWN(QtJson::SerializableAdapter<TSerializable>::fromCbor(cbor, config), QtJson::Exception);
+            } else {
+                if (!json.isUndefined())
+                    compare(QtJson::SerializableAdapter<TSerializable>::fromJson(json, config), vData, __FILE__, __LINE__);
+                if (!cbor.isInvalid())
+                    compare(QtJson::SerializableAdapter<TSerializable>::fromCbor(cbor, config), vData, __FILE__, __LINE__);
+            }
+        } catch (std::exception &e) {
+            QFAIL(e.what());
+        }
+    }, data);
+}
+
+template<typename... TSerializables>
+template<typename TSerializable, typename... TArgs>
+typename SerializationMultiTest<TSerializables...>::Variant SerializationMultiTest<TSerializables...>::d(TArgs&&... args) const
+{
+    return TSerializable{std::forward<TArgs>(args)...};
 }

@@ -5,7 +5,7 @@
 using namespace QtJson;
 
 template <typename T>
-inline QDebug operator<<(QDebug debug, const SerializableOptional<T> &opt) {
+inline QDebug operator<<(QDebug debug, const std::optional<T> &opt) {
 	if (opt)
 		debug << *opt;
 	else
@@ -14,8 +14,8 @@ inline QDebug operator<<(QDebug debug, const SerializableOptional<T> &opt) {
 }
 
 class OptionalTest : public SerializationMultiTest<
-						 SerializableOptional<int>,
-						 SerializableOptional<TestSerializable>>
+                         std::optional<int>,
+                         std::optional<TestSerializable>>
 {
 	Q_OBJECT
 
@@ -23,16 +23,18 @@ protected:
 	void setupData() const override;
 
 private:
-	inline ConstSerPtr di(std::optional<int> value = std::nullopt) const {
-		return d<SerializableOptional<int>>(value);
+    inline Variant di(std::optional<int> &&value = std::nullopt) const {
+        return d<std::optional<int>>(std::move(value));
 	}
 
-	inline ConstSerPtr ds(std::optional<double> value = std::nullopt, std::optional<QCborKnownTags> tag = std::nullopt) const {
-		return d<SerializableOptional<TestSerializable>>(value ?
-			std::optional<TestSerializable>{{*value, tag}} :
+    inline Variant ds(std::optional<double> &&value = std::nullopt, std::optional<QCborKnownTags> &&tag = std::nullopt) const {
+        return d<std::optional<TestSerializable>>(value ?
+            std::optional<TestSerializable>{{*std::move(value), std::move(tag)}} :
 			std::nullopt);
 	}
 };
+
+Q_DECLARE_METATYPE(OptionalTest::Variant)
 
 void OptionalTest::setupData() const
 {

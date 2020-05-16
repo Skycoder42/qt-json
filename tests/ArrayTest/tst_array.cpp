@@ -5,15 +5,15 @@
 using namespace QtJson;
 
 class ArrayTest : public SerializationMultiTest<
-					  SerializableList<int>,
-					  SerializableVector<int>,
+                      QList<int>,
+                      QVector<int>,
 #ifndef QT_NO_LINKED_LIST
-					  SerializableLinkedList<int>,
+                      QLinkedList<int>,
 #endif
-					  SerializableQueue<int>,
-					  SerializableStack<int>,
-					  SerializableSet<int>,
-					  SerializableList<TestSerializable>>
+                      QQueue<int>,
+                      QStack<int>,
+                      QSet<int>,
+                      QList<TestSerializable>>
 {
 	Q_OBJECT
 
@@ -24,42 +24,44 @@ protected:
 
 private:
 	template <typename... TArgs>
-	inline ConstSerPtr dl(TArgs... args) const {
-		return d<SerializableList<int>>(SerializableList<int>{args...});
-	}
-	template <typename... TArgs>
-	inline ConstSerPtr dv(TArgs... args) const {
-		return d<SerializableVector<int>>(SerializableVector<int>{args...});
-	}
+    inline Variant dl(TArgs&&... args) const {
+        return d<QList<int>>(std::forward<TArgs>(args)...);
+    }
+    template <typename... TArgs>
+    inline Variant dv(TArgs&&... args) const {
+        return d<QVector<int>>(std::forward<TArgs>(args)...);
+    }
 #ifndef QT_NO_LINKED_LIST
-	template <typename... TArgs>
-	inline ConstSerPtr dll(TArgs... args) const {
-		return d<SerializableLinkedList<int>>(SerializableLinkedList<int>{args...});
-	}
+    template <typename... TArgs>
+    inline Variant dll(TArgs&&... args) const {
+        return d<QLinkedList<int>>(std::forward<TArgs>(args)...);
+    }
 #endif
 	template <typename... TArgs>
-	inline ConstSerPtr dq(TArgs... args) const {
-		SerializableQueue<int> q;
-		int x[] = {0, (q.append(args),0)...};
-		Q_UNUSED(x);
-		return d<SerializableQueue<int>>(q);
+    inline Variant dq(TArgs&&... args) const {
+        QQueue<int> q;
+        int x[] = {0, (q.append(args),0)...};
+        Q_UNUSED(x);
+        return d<QQueue<int>>(std::move(q));
 	}
 	template <typename... TArgs>
-	inline ConstSerPtr ds(TArgs... args) const {
-		SerializableStack<int> s;
-		int x[] = {0, (s.append(args),0)...};
-		Q_UNUSED(x);
-		return d<SerializableStack<int>>(s);
+    inline Variant ds(TArgs&&... args) const {
+        QStack<int> s;
+        int x[] = {0, (s.append(args),0)...};
+        Q_UNUSED(x);
+        return d<QStack<int>>(std::move(s));
 	}
 	template <typename... TArgs>
-	inline ConstSerPtr dhs(TArgs... args) const {
-		return d<SerializableSet<int>>(SerializableSet<int>{args...});
+    inline Variant dhs(TArgs&&... args) const {
+        return d<QSet<int>>(std::forward<TArgs>(args)...);
 	}
 	template <typename... TArgs>
-	inline ConstSerPtr dls(TArgs... args) const {
-		return d<SerializableList<TestSerializable>>(SerializableList<TestSerializable>{TestSerializable{args}...});
+    inline Variant dls(TArgs&&... args) const {
+        return d<QList<TestSerializable>>(std::forward<TArgs>(args)...);
 	}
 };
+
+Q_DECLARE_METATYPE(ArrayTest::Variant)
 
 void ArrayTest::setupData() const
 {
