@@ -1,5 +1,4 @@
 #include <QtTest>
-#include <testlib.h>
 #include <serializableadapter.h>
 #include <testserializable.h>
 using namespace QtJson;
