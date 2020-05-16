@@ -5,7 +5,7 @@ SUBDIRS += lib
 !cross_compile {
     SUBDIRS += \
         tests \
-#        demo
+        demo
 
 	demo.depends += lib
 	tests.depends += lib
