@@ -31,20 +31,20 @@ private:
 		return config;
 	}
 
-	inline ConstSerPtr dx(double data) const {
+    inline TestGadget dx(double data) const {
 		TestGadget gadget;
 		gadget.prop6.value = data;
 		return d(gadget);
 	}
 
-	inline ConstSerPtr de(TestGadget::Flags f, TestGadget::Enum e) const {
+    inline TestGadget de(TestGadget::Flags f, TestGadget::Enum e) const {
 		TestGadget gadget;
 		gadget.prop7 = f;
 		gadget.prop8 = e;
 		return d(gadget);
 	}
 
-	inline ConstSerPtr ds(int prop2) const {
+    inline TestGadget ds(int prop2) const {
 		TestGadget gadget;
 		gadget.prop2 = prop2;
 		return d(gadget);
@@ -55,7 +55,7 @@ private:
 			{QStringLiteral("prop1"), 1},
 			{QStringLiteral("prop3"), 3},
 			{QStringLiteral("prop4"), 4},
-			{QStringLiteral("prop5"), 0.0},
+            {QStringLiteral("prop5"), 5.5},
 			{QStringLiteral("prop6"), 0.0},
 			{QStringLiteral("prop7"), QString{}},
 			{QStringLiteral("prop8"), QStringLiteral("Value1")},
@@ -75,7 +75,7 @@ private:
 			{QStringLiteral("prop1"), 1},
 			{QStringLiteral("prop3"), 3},
 			{QStringLiteral("prop4"), 4},
-			{QStringLiteral("prop5"), 0.0},
+            {QStringLiteral("prop5"), 5.5},
 			{QStringLiteral("prop6"), 0.0},
 			{QStringLiteral("prop7"), QString{}},
 			{QStringLiteral("prop8"), QStringLiteral("Value1")},

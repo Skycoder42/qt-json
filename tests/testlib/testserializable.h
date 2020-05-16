@@ -22,3 +22,5 @@ public:
 };
 
 QDebug operator<<(QDebug debug, const TestSerializable &value);
+
+Q_DECLARE_METATYPE(TestSerializable)

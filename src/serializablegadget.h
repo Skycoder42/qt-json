@@ -8,21 +8,21 @@
 
 #include <QtCore/QObject>
 
-namespace QtJson {
-
-namespace __private {
+namespace QtJson::__private {
 
 enum class AdapterMethod {
-	ToJson,
-	FromJson,
-	ToCbor,
-	FromCbor
+    ToJson,
+    FromJson,
+    ToCbor,
+    FromCbor
 };
 
 template <typename TType>
 struct DataValueInfo;
 
 }
+
+namespace QtJson {
 
 class QTJSON_EXPORT SerializableGadget : public ISerializable
 {
@@ -96,16 +96,16 @@ private:
 
 #define QTJSON_SERIALIZABLE_PROP(name, get, set, ...) \
 	Q_INVOKABLE inline QJsonValue __qtjson_ ## name ## _toJson(const QtJson::Configuration &config) const { \
-		return QtJson::SerializableAdapter<__VA_ARGS>::toJson(get(), config); \
+        return QtJson::SerializableAdapter<__VA_ARGS__>::toJson(get(), config); \
 	} \
 	Q_INVOKABLE inline void __qtjson_ ## name ## _fromJson(const QJsonValue &value, const QtJson::Configuration &config) { \
-		set(QtJson::SerializableAdapter<__VA_ARGS>::fromJson(value, config)); \
+        set(QtJson::SerializableAdapter<__VA_ARGS__>::fromJson(value, config)); \
 	} \
 	Q_INVOKABLE inline QCborValue __qtjson_ ## name ## _toCbor(const QtJson::Configuration &config) const { \
-		return QtJson::SerializableAdapter<__VA_ARGS>::toCbor(get(), config); \
+        return QtJson::SerializableAdapter<__VA_ARGS__>::toCbor(get(), config); \
 	} \
 	Q_INVOKABLE inline void __qtjson_ ## name ## _fromCbor(const QCborValue &value, const QtJson::Configuration &config) { \
-		set(QtJson::SerializableAdapter<__VA_ARGS>::fromCbor(value, config)); \
+        set(QtJson::SerializableAdapter<__VA_ARGS__>::fromCbor(value, config)); \
 	}
 
 #define QTJSON_SERIALIZABLE_PROP_MEMBER(name, member, ...) \

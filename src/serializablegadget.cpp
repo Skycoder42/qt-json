@@ -56,7 +56,7 @@ std::optional<QMetaMethod> SerializableGadget::findMethod(const QMetaObject *met
 	}
 
     const auto mIdx = metaObject->indexOfMethod(QMetaObject::normalizedSignature(rawMethodSignature));
-	if (mIdx < 0)
+    if (mIdx < 0)
 		return std::nullopt;
 	else
         return metaObject->method(mIdx);
@@ -133,7 +133,7 @@ TValue SerializableGadget::findInfo(const QMetaObject *metaObject, const char *k
 template<typename TValue>
 typename DataValueInfo<TValue>::Map SerializableGadget::serialize(const Configuration &config) const
 {
-	const auto metaObject = getMetaObject();
+    const auto metaObject = getMetaObject();
 	const auto offset = findInfo<int>(metaObject, QTJSON_PROPERTY_OFFSET_KEY, 0);
 	typename DataValueInfo<TValue>::Map map;
 	for (auto i = offset; i < metaObject->propertyCount(); ++i) {

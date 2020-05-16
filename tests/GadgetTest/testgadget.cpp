@@ -1,5 +1,15 @@
 #include "testgadget.h"
 
+int TestGadget::getProp3() const
+{
+    return prop3;
+}
+
+void TestGadget::setProp3(int value)
+{
+    prop3 = value;
+}
+
 TestGadget::Flags TestGadget::getProp7() const
 {
 	return prop7;
@@ -12,8 +22,8 @@ void TestGadget::setProp7(Flags value)
 
 bool TestGadget::operator==(const TestGadget &other) const
 {
-	return prop1 == other.prop1 &&
-			prop2 == other.prop2 &&
+    return prop1 == other.prop1 &&
+            prop2 == other.prop2 &&
 		   prop3 == other.prop3 &&
 		   prop4 == other.prop4 &&
 		   prop5 == other.prop5 &&

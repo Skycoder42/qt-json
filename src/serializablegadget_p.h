@@ -54,7 +54,7 @@ struct DataValueInfo<QCborValue> {
 
 }
 
-#define QTJSON_SERIALIZABLE_PROP_TO_JSON_SIGNATURE(name) "__qtjson_" + name + "_toJson(const QtJson::Configuration &) const"
+#define QTJSON_SERIALIZABLE_PROP_TO_JSON_SIGNATURE(name) "__qtjson_" + name + "_toJson(const QtJson::Configuration &)"
 #define QTJSON_SERIALIZABLE_PROP_FROM_JSON_SIGNATURE(name) "__qtjson_" + name + "_fromJson(const QJsonValue &, const QtJson::Configuration &)"
-#define QTJSON_SERIALIZABLE_PROP_TO_CBOR_SIGNATURE(name) "__qtjson_" + name + "_toCbor(const QtJson::Configuration &) const"
+#define QTJSON_SERIALIZABLE_PROP_TO_CBOR_SIGNATURE(name) "__qtjson_" + name + "_toCbor(const QtJson::Configuration &)"
 #define QTJSON_SERIALIZABLE_PROP_FROM_CBOR_SIGNATURE(name) "__qtjson_" + name + "_fromCbor(const QCborValue &, const QtJson::Configuration &)"

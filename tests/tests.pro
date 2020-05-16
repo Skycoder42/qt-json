@@ -6,7 +6,7 @@ SUBDIRS +=  \
         ByteArrayTest \
         DateTimeTest \
         DictionaryTest \
-#        GadgetTest \
+        GadgetTest \
         OptionalTest \
         VersionNumberTest \
         testlib
