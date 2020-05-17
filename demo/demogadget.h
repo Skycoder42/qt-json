@@ -1,43 +1,57 @@
 #pragma once
 
-#include <serializablegadget.h>
+#include <qtjson.h>
 
 class DemoGadget : public QtJson::SerializableGadget
 {
 	Q_GADGET
-    QTJSON_SERIALIZABLE_GADGET(DemoGadget)
+	QTJSON_SERIALIZABLE_GADGET(DemoGadget)
 
 	Q_PROPERTY(int id MEMBER id USER true)
-    QTJSON_SERIALIZABLE_PROP_MEMBER(id, id, int);
+	QTJSON_SERIALIZABLE_PROP_MEMBER(id, id, int);
 
-    QTJSON_PROP(name, QString);
-    QTJSON_PROP(when, std::optional<QDateTime>) = std::nullopt;
-    QTJSON_PROP(elements, QList<QByteArray>);
+	QTJSON_PROP(name, QString);
+	QTJSON_PROP(when, std::optional<QDateTime>) = std::nullopt;
+	QTJSON_PROP(elements, QList<QByteArray>);
+	Q_PROPERTY(FunnyEnum funny MEMBER funny)
 
 	Q_PROPERTY(bool valid READ isValid STORED false);
 
 	Q_PROPERTY(double special READ special WRITE setSpecial)
-    QTJSON_SERIALIZABLE_PROP(special, special, setSpecial, double)
+	QTJSON_SERIALIZABLE_PROP(special, special, setSpecial, double)
 
 public:
-    int id = 0;
+	enum FunnyEnum {
+		This,
+		Is,
+		Not,
+		Funny
+	};
+	Q_ENUM(FunnyEnum)
 
-	inline bool isValid() const {
-		return id != 0;
-	}
+	int id = 0;
+	FunnyEnum funny = Funny;
 
-	inline double special() const {
-		return _special;
-	}
+	bool isValid() const;
+	double special() const;
 
 public slots:
-	inline void setSpecial(double special) {
-		_special = special;
-	}
+	void setSpecial(double special);
 
 private:
 	double _special = -1;
 };
+
+template <typename T>
+inline QDebug operator<<(QDebug debug, const std::optional<T> &opt) {
+	if (opt)
+		debug << *opt;
+	else
+		debug << "null";
+	return debug;
+}
+
+QDebug operator<<(QDebug debug, const DemoGadget &gadget);
 
 Q_DECLARE_METATYPE(std::optional<QDateTime>)
 Q_DECLARE_METATYPE(DemoGadget)
