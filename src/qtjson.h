@@ -76,9 +76,9 @@ inline TValue parseBinary(const QByteArray &cborData, const Configuration &confi
 template <typename TValue>
 inline TValue parseAny(const QByteArray &data, const Configuration &config = {}) {
     if (data.mid(0, 3) == __private::CborSignature)
-        return parseBinary(data, config, false);
+        return parseBinary<TValue>(data, config, false);
     else
-        return parseString(QString::fromUtf8(data), config);
+        return parseString<TValue>(QString::fromUtf8(data), config);
 }
 
 }
