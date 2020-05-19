@@ -19,6 +19,7 @@ HEADERS += \
 	$$PWD/src/serializableversionnumber.h
 
 SOURCES += \
+	$$PWD/src/qtjson.cpp \
 	$$PWD/src/qtjson_helpers.cpp \
 	$$PWD/src/serializablebytearray.cpp \
 	$$PWD/src/serializabledatetime.cpp \
