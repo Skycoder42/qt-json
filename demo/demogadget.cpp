@@ -15,13 +15,13 @@ void DemoGadget::setSpecial(double special) {
 QDebug operator<<(QDebug debug, const DemoGadget &gadget)
 {
 	QDebugStateSaver state{debug};
-	debug.noquote().nospace() << "DemoGadget{"
-							  << "id=" << gadget.id << ", "
-							  << "name=" << gadget.name << ", "
-							  << "when=" << gadget.when << ", "
-							  << "elements=" << gadget.elements << ", "
-							  << "funny=" << gadget.funny << ", "
-							  << "special=" << gadget.special() << ", "
-							  << "valid=" << gadget.isValid() << "}";
+    debug.noquote().nospace() << "DemoGadget {\n"
+                              << "    id=" << gadget.id << ",\n"
+                              << "    name=" << gadget.name << ",\n"
+                              << "    when=" << gadget.when << ",\n"
+                              << "    elements=" << gadget.elements << ",\n"
+                              << "    funny=" << gadget.funny << ",\n"
+                              << "    special=" << gadget.special() << ",\n"
+                              << "    valid=" << gadget.isValid() << "\n}";
 	return debug;
 }
