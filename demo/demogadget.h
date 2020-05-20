@@ -34,8 +34,6 @@ public:
 
 	bool isValid() const;
 	double special() const;
-
-public slots:
 	void setSpecial(double special);
 
 private:
