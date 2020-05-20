@@ -108,3 +108,48 @@ each property beeing one element of that object. Normal Q_PROPERTYs are converte
 the SerializableAdapter (link TODO), QTJSON_PROP (or QTJSON_SERIALIZABLE_PROP[_MEMBER]) must be used.
 
 ## Documentation
+The package does not expose many APIs, but defines a few concepts that you need to follow when adding your own
+serializable types. The following documentation goes into detail in regards of those points.
+
+As a broader overview, here are the parts of the package that are of interest:
+
+- **QtJson namespace:** Provides a set of globals as the Consumer-API
+- **ISerializable:** A basic interface that can be implemented for custom types
+- **SerializableAdapter:** A generic calls that can add serialization to existing types via template specialization
+- **Fallback conversion:** What happens if no interface or adapter implementation apply to a type
+
+### QtJson namespace
+The public namespace, defined in the `qt-json.h` header, provides three groups of functions:
+
+- **read/writeJson/Cbor:** Reads and writes QJsonValue/QCborValue from and to their string or binary representation.
+These methods simply exist for convenience and internally use QJsonDocument and QCborValue directly to perform the
+conversion
+- **from/toJson/Cbor:** Perform the actual conversions between C++ classes to QJsonValue/QCborValue. This is where the
+main part of the library operates and where ISerializable and the SerializableAdapter are used.
+- **stringify/binarify/parse*:** Combines the previous two function groups to allow direct conversions between C++ and
+the binary or string data
+
+### SerializableAdapter
+The adapter is a static, generic class that can be specialized to provider converters from and to json and cbor for any
+type. It provides the following generic interface:
+
+```cpp
+template <typename TType, typename = void>
+class SerializableAdapter
+{
+public:
+    static inline QJsonValue toJson(const TType &value, const Configuration & = {});
+    static inline TType fromJson(const QJsonValue &value, const Configuration & = {});
+    static inline QCborValue toCbor(const TType &value, const Configuration & = {});
+    static inline TType fromCbor(const QCborValue &value, const Configuration & = {});
+};
+```
+
+It has two template parameters to support SFINAE based partial specialization, but the second parameter is defaulted
+and can be left out when using the adapter.
+
+### ISerializable
+
+### SerializableGadget
+
+### Fallback conversion
