@@ -24,7 +24,7 @@ struct Configuration {
 	ByteArrayMode byteArrayMode = ByteArrayMode::Base64;
 	bool dateAsTimeStamp = false;
 	bool enumAsString = true;
-	bool versionAsString = false;
+    bool versionAsString = true;
 	ValidationFlags validation = ValidationFlag::Full;
 
 	QVariantMap extraConfig;
