@@ -11,17 +11,34 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(Qt5 COMPONENTS Core REQUIRED)
 
-include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
-conan_basic_setup()
+#include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
+#conan_basic_setup()
 
 add_library(qt-json
-    qtjson.cpp
-    qtjson_helpers.cpp
-    serializablebytearray.cpp
-    serializabledatetime.cpp
+    configuration.h
+    iserializable.h
     iserializable.cpp
+    qtjson.h
+    qtjson.cpp
+    qtjson_exception.h
     qtjson_exception.cpp
+    qtjson_global.h
+    qtjson_helpers.h
+    qtjson_helpers.cpp
+    serializableadapter.h
+    serializablearray.h
+    serializablearray_p.h
+    serializablebytearray.h
+    serializablebytearray.cpp
+    serializabledatetime.h
+    serializabledatetime.cpp
+    serializabledictionary.h
+    serializabledictionary_p.h
+    serializablegadget.h
+    serializablegadget_p.h
     serializablegadget.cpp
+    serializableoptional.h
+    serializableversionnumber.h
     serializableversionnumber.cpp
 )
 

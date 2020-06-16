@@ -1,5 +1,6 @@
 #pragma once
 
+#include "qtjson_global.h"
 #include "iserializable.h"
 
 namespace QtJson {

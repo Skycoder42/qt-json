@@ -1,5 +1,7 @@
 #pragma once
 
+#include "qtjson_global.h"
+
 #include <type_traits>
 
 #include <QtCore/QtContainerFwd>

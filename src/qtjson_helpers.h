@@ -1,5 +1,7 @@
 #pragma once
 
+#include "qtjson_global.h"
+
 #include <QtCore/QCborValue>
 
 namespace QtJson::__private {

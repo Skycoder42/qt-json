@@ -1,5 +1,7 @@
 #pragma once
 
+#include "qtjson_global.h"
+
 #include <QtCore/QVariantMap>
 
 namespace QtJson {

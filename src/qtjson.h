@@ -1,5 +1,6 @@
 #pragma once
 
+#include "qtjson_global.h"
 #include "configuration.h"
 #include "iserializable.h"
 #include "qtjson_exception.h"

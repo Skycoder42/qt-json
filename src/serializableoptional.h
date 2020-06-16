@@ -1,10 +1,11 @@
 #pragma once
 
-#include <optional>
-
+#include "qtjson_global.h"
 #include "iserializable.h"
 #include "serializableadapter.h"
 #include "qtjson_helpers.h"
+
+#include <optional>
 
 namespace QtJson {
 

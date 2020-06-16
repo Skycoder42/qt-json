@@ -1,9 +1,10 @@
 #pragma once
 
-#include <QtCore/QVersionNumber>
-
+#include "qtjson_global.h"
 #include "iserializable.h"
 #include "serializableadapter.h"
+
+#include <QtCore/QVersionNumber>
 
 namespace QtJson {
 

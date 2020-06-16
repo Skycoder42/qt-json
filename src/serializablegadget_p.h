@@ -1,5 +1,6 @@
 #pragma once
 
+#include "qtjson_global.h"
 #include "serializablegadget.h"
 
 #include <QtCore/QMetaMethod>
